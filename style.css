@@ -1,0 +1,197 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f8ff; /* Light blue background */
+    color: #003366; /* Dark blue text */
+}
+
+header {
+    background-color: #0066cc; /* Bright blue header */
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    background-color: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.logo-container h1 {
+    color: #0066cc;
+    margin: 0;
+    padding: 0;
+    font-size: 2rem;
+}
+
+.logo {
+    height: 60px;
+    width: auto;
+    display: block;
+}
+
+header h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 2rem;
+}
+
+nav {
+    background-color: #004d99; /* Darker blue for navigation */
+    padding: 1rem;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    padding: 0.5rem;
+    transition: background-color 0.3s;
+}
+
+nav a:hover {
+    background-color: #0055b3; /* Slightly lighter blue on hover */
+    border-radius: 4px;
+}
+
+#hero {
+    background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 6rem 2rem;
+    position: relative;
+}
+
+#hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+#hero h2, #hero p {
+    position: relative;
+    z-index: 2;
+}
+
+#hero h2 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#hero p {
+    font-size: 1.5rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+#intro {
+    background-color: #e6f3ff; /* Very light blue */
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+#intro h2 {
+    color: #0066cc; /* Matching header blue */
+}
+
+/* Featured Exhibits Section */
+#featured-exhibits {
+    padding: 3rem 2rem;
+    background-color: white;
+}
+
+#featured-exhibits h2 {
+    text-align: center;
+    color: #0066cc;
+    margin-bottom: 2rem;
+}
+
+.exhibit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.exhibit-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.exhibit-card:hover {
+    transform: translateY(-5px);
+}
+
+.exhibit-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.exhibit-card h3 {
+    color: #0066cc;
+    padding: 1rem;
+    margin: 0;
+}
+
+.exhibit-card p {
+    padding: 0 1rem 1rem;
+    margin: 0;
+    color: #666;
+}
+
+section {
+    padding: 2rem;
+}
+
+section h2 {
+    color: #0066cc;
+    margin-bottom: 1rem;
+}
+
+ul {
+    list-style-type: disc;
+    padding-left: 2rem;
+}
+
+a {
+    color: #0066cc;
+    text-decoration: underline;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+footer {
+    background-color: #004d99; /* Dark blue footer */
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
