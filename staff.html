@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Directory - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .staff-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 80px;
+        }
+
+        .staff-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        .staff-header h2 {
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-controls {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .search-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .search-group label {
+            font-weight: bold;
+            color: #333;
+            min-width: 100px;
+        }
+
+        .search-group input,
+        .search-group select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .search-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .search-button:hover {
+            background-color: #0055b3;
+        }
+
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .staff-card {
+            background: white;
+            border: 1px solid #e6e6e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .staff-card h3 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .staff-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0066cc, #004d99);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .staff-details {
+            margin-bottom: 1rem;
+        }
+
+        .staff-details p {
+            margin: 0.25rem 0;
+            color: #666;
+        }
+
+        .staff-details strong {
+            color: #333;
+        }
+
+        .department-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .department-maintenance {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .department-animal-care {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .department-education {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .department-security {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .department-administration {
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        .status-online {
+            color: #28a745;
+        }
+
+        .status-offline {
+            color: #dc3545;
+        }
+
+        .status-break {
+            color: #ffc107;
+        }
+
+        .stats-panel {
+            background-color: #e6f3ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #0066cc;
+        }
+
+        .stat-item p {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .login-required {
+            text-align: center;
+            padding: 3rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+
+        .login-required h3 {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .login-required p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-button {
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #0055b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Staff Directory</h2>
+        <p>Access employee contact information, schedules, and department assignments</p>
+    </section>
+
+    <div class="staff-container" id="staffContent" style="display: none;">
+        <div class="staff-header">
+            <h2>Staff Directory</h2>
+            <p>Manage employee information and team coordination</p>
+        </div>
+
+        <div class="stats-panel">
+            <h3>👥 Staff Overview</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h4>Total Staff</h4>
+                    <p>24</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Currently Online</h4>
+                    <p>18</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Departments</h4>
+                    <p>5</p>
+                </div>
+                <div class="stat-item">
+                    <h4>On Break</h4>
+                    <p>3</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-controls">
+            <h3>🔍 Search Staff</h3>
+            <div class="search-group">
+                <label for="searchName">Name:</label>
+                <input type="text" id="searchName" placeholder="Search by name...">
+            </div>
+            <div class="search-group">
+                <label for="searchDepartment">Department:</label>
+                <select id="searchDepartment">
+                    <option value="">All Departments</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="animal-care">Animal Care</option>
+                    <option value="education">Education</option>
+                    <option value="security">Security</option>
+                    <option value="administration">Administration</option>
+                </select>
+            </div>
+            <div class="search-group">
+                <label for="searchStatus">Status:</label>
+                <select id="searchStatus">
+                    <option value="">All Status</option>
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                    <option value="break">On Break</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="staff-grid" id="staffGrid">
+            <!-- Staff cards will be loaded here -->
+        </div>
+    </div>
+
+    <div class="login-required" id="loginRequired">
+        <h3>🔒 Access Restricted</h3>
+        <p>This staff directory requires employee authentication. Please log in to access employee information and contact details.</p>
+        <a href="login.html" class="login-button">Employee Login</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        // Staff data
+        const staffData = [
+            {
+                id: 1,
+                name: 'Bob Miller',
+                position: 'Junior Aquarist',
+                department: 'maintenance',
+                email: 'bob@aquaticnaturediscovery.org',
+                phone: '(555) 123-4567',
+                status: 'online',
+                location: 'Coral Reef Tank',
+                avatar: 'BM',
+                icon: '👨‍🔧'
+            },
+            {
+                id: 2,
+                name: 'Sarah Wilson',
+                position: 'Marine Biologist',
+                department: 'animal-care',
+                email: 'sarah@aquaticnaturediscovery.org',
+                phone: '(555) 123-4568',
+                status: 'online',
+                location: 'Deep Sea Exhibit',
+                avatar: 'SW',
+                icon: '👩‍🔬'
+            },
+            {
+                id: 3,
+                name: 'Mike Johnson',
+                position: 'Facilities Manager',
+                department: 'maintenance',
+                email: 'mike@aquaticnaturediscovery.org',
+                phone: '(555) 123-4569',
+                status: 'break',
+                location: 'Filtration Room',
+                avatar: 'MJ',
+                icon: '👨‍💼'
+            },
+            {
+                id: 4,
+                name: 'Lisa Chen',
+                position: 'Education Coordinator',
+                department: 'education',
+                email: 'lisa@aquaticnaturediscovery.org',
+                phone: '(555) 123-4570',
+                status: 'online',
+                location: 'Education Center',
+                avatar: 'LC',
+                icon: '👩‍🏫'
+            },
+            {
+                id: 5,
+                name: 'David Brown',
+                position: 'Security Supervisor',
+                department: 'security',
+                email: 'david@aquaticnaturediscovery.org',
+                phone: '(555) 123-4571',
+                status: 'online',
+                location: 'Security Office',
+                avatar: 'DB',
+                icon: '👨‍🔒'
+            },
+            {
+                id: 6,
+                name: 'Tom Davis',
+                position: 'IT Administrator',
+                department: 'administration',
+                email: 'tom@aquaticnaturediscovery.org',
+                phone: '(555) 123-4572',
+                status: 'offline',
+                location: 'IT Office',
+                avatar: 'TD',
+                icon: '👨‍💻'
+            },
+            {
+                id: 7,
+                name: 'Amy Martinez',
+                position: 'Veterinary Technician',
+                department: 'animal-care',
+                email: 'amy@aquaticnaturediscovery.org',
+                phone: '(555) 123-4573',
+                status: 'online',
+                location: 'Marine Mammals',
+                avatar: 'AM',
+                icon: '👩‍⚕️'
+            },
+            {
+                id: 8,
+                name: 'Robert Kim',
+                position: 'Education Specialist',
+                department: 'education',
+                email: 'robert@aquaticnaturediscovery.org',
+                phone: '(555) 123-4574',
+                status: 'break',
+                location: 'Learning Lab',
+                avatar: 'RK',
+                icon: '👨‍🎓'
+            }
+        ];
+
+        // Check if user is logged in
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('employeeLoggedIn');
+            
+            if (isLoggedIn === 'true') {
+                document.getElementById('staffContent').style.display = 'block';
+                document.getElementById('loginRequired').style.display = 'none';
+                loadStaffData();
+            } else {
+                document.getElementById('staffContent').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'block';
+            }
+        }
+
+        // Load and display staff data
+        function loadStaffData() {
+            displayStaffCards(staffData);
+            updateStats(staffData);
+        }
+
+        // Display staff cards
+        function displayStaffCards(staff) {
+            const grid = document.getElementById('staffGrid');
+            grid.innerHTML = '';
+            
+            staff.forEach(member => {
+                const card = createStaffCard(member);
+                grid.appendChild(card);
+            });
+        }
+
+        // Create a staff card element
+        function createStaffCard(member) {
+            const card = document.createElement('div');
+            card.className = 'staff-card';
+            
+            const departmentClass = `department-${member.department}`;
+            const statusClass = `status-${member.status}`;
+            
+            card.innerHTML = `
+                <div class="staff-avatar">${member.avatar}</div>
+                <h3>${member.icon} ${member.name}</h3>
+                <div class="staff-details">
+                    <p><strong>Position:</strong> ${member.position}</p>
+                    <p><strong>Department:</strong> <span class="department-badge ${departmentClass}">${getDepartmentDisplayName(member.department)}</span></p>
+                    <p><strong>Email:</strong> ${member.email}</p>
+                    <p><strong>Phone:</strong> ${member.phone}</p>
+                    <p><strong>Status:</strong> <span class="${statusClass}">● ${getStatusDisplayName(member.status)}</span></p>
+                    <p><strong>Location:</strong> ${member.location}</p>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Get department display name
+        function getDepartmentDisplayName(department) {
+            const displayNames = {
+                'maintenance': 'Maintenance',
+                'animal-care': 'Animal Care',
+                'education': 'Education',
+                'security': 'Security',
+                'administration': 'Administration'
+            };
+            return displayNames[department] || department;
+        }
+
+        // Get status display name
+        function getStatusDisplayName(status) {
+            const displayNames = {
+                'online': 'Online',
+                'offline': 'Offline',
+                'break': 'On Break'
+            };
+            return displayNames[status] || status;
+        }
+
+        // Update statistics
+        function updateStats(staff) {
+            const totalStaff = staff.length;
+            const onlineStaff = staff.filter(s => s.status === 'online').length;
+            const departments = new Set(staff.map(s => s.department)).size;
+            const onBreak = staff.filter(s => s.status === 'break').length;
+            
+            // Update stats display
+            const statsItems = document.querySelectorAll('.stat-item p');
+            if (statsItems.length >= 4) {
+                statsItems[0].textContent = totalStaff;
+                statsItems[1].textContent = onlineStaff;
+                statsItems[2].textContent = departments;
+                statsItems[3].textContent = onBreak;
+            }
+        }
+
+        // Filter staff function
+        function searchStaff() {
+            const name = document.getElementById('searchName').value.toLowerCase();
+            const department = document.getElementById('searchDepartment').value;
+            const status = document.getElementById('searchStatus').value;
+
+            const filteredStaff = staffData.filter(member => {
+                const nameMatch = !name || member.name.toLowerCase().includes(name) || 
+                                member.position.toLowerCase().includes(name);
+                const departmentMatch = !department || member.department === department;
+                const statusMatch = !status || member.status === status;
+                
+                return nameMatch && departmentMatch && statusMatch;
+            });
+
+            displayStaffCards(filteredStaff);
+            updateStats(filteredStaff);
+        }
+
+        // Add real-time search functionality
+        function addSearchListeners() {
+            document.getElementById('searchName').addEventListener('input', searchStaff);
+            document.getElementById('searchDepartment').addEventListener('change', searchStaff);
+            document.getElementById('searchStatus').addEventListener('change', searchStaff);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            addSearchListeners();
+        });
+
+        // Auto-refresh login status every 30 seconds
+        setInterval(checkLoginStatus, 30000);
+    </script>
+</body>
+</html> 
