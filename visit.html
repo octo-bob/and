@@ -4,6 +4,287 @@
     <meta charset="UTF-8">
     <title>Visit - Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .visit-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .visit-hero {
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+            margin-bottom: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 102, 204, 0.3);
+        }
+
+        .visit-hero h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .visit-hero p {
+            font-size: 1.3rem;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #0066cc;
+            position: relative;
+        }
+
+        .section-header h2 {
+            color: #0066cc;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #0066cc, #28a745);
+        }
+
+        .enhanced-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .enhanced-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0066cc, #28a745);
+        }
+
+        .enhanced-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .enhanced-card h3 {
+            color: #0066cc;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .enhanced-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .enhanced-card li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f8f9fa;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .enhanced-card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .enhanced-card li:last-child {
+            border-bottom: none;
+        }
+
+        .location-button {
+            background: linear-gradient(135deg, #0066cc 0%, #0055b3 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 1rem 0;
+            box-shadow: 0 4px 15px rgba(0, 102, 204, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .location-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .location-button:hover::before {
+            left: 100%;
+        }
+
+        .location-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
+        }
+
+        .location-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .location-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #0066cc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 102, 204, 0.1);
+        }
+
+        .location-info p {
+            margin: 0.5rem 0;
+            font-weight: 500;
+        }
+
+        .location-info strong {
+            color: #0066cc;
+        }
+
+        .directions-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .directions-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+
+        .error-message {
+            color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        .pricing-card {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border: 2px solid #0066cc;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0066cc, #28a745);
+        }
+
+        .price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0066cc;
+            margin: 1rem 0;
+        }
+
+        .price-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -22,84 +303,377 @@
         </nav>
     </header>
 
-    <section id="visit-hero">
-        <h2>Plan Your Visit</h2>
-        <p>Experience the wonders of the ocean at Aquatic Nature Discovery</p>
-    </section>
+    <div class="visit-container">
+        <section class="visit-hero">
+            <h2>Plan Your Visit</h2>
+            <p>Experience the wonders of the ocean at Aquatic Nature Discovery</p>
+        </section>
 
-    <section id="hours-location">
-        <h2>Hours & Location</h2>
-        <div class="exhibit-grid">
-            <div class="exhibit-card">
-                <h3>Opening Hours</h3>
-                <ul>
-                    <li>Monday - Friday: 9:00 AM - 6:00 PM</li>
-                    <li>Saturday - Sunday: 8:00 AM - 7:00 PM</li>
-                    <li>Holidays: 8:00 AM - 7:00 PM</li>
-                </ul>
-                <p>Last admission is 1 hour before closing</p>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Marine Species</div>
             </div>
-            <div class="exhibit-card">
-                <h3>Location</h3>
-                <p>123 Ocean Drive<br>
-                Coastal City, CA 90210</p>
-                <ul>
-                    <li>Free parking available</li>
-                    <li>Public transportation accessible</li>
-                    <li>Wheelchair accessible</li>
-                </ul>
+            <div class="stat-card">
+                <div class="stat-number">100K+</div>
+                <div class="stat-label">Annual Visitors</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">25+</div>
+                <div class="stat-label">Years of Excellence</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4.8★</div>
+                <div class="stat-label">Visitor Rating</div>
             </div>
         </div>
-    </section>
 
-    <section id="tickets">
-        <h2>Admission</h2>
-        <div class="exhibit-grid">
-            <div class="exhibit-card">
-                <h3>General Admission</h3>
-                <ul>
-                    <li>Adults (13+): $29.95</li>
-                    <li>Children (3-12): $19.95</li>
-                    <li>Seniors (65+): $24.95</li>
-                    <li>Children under 3: Free</li>
-                </ul>
+        <section id="hours-location">
+            <div class="section-header">
+                <h2>Hours & Location</h2>
             </div>
-            <div class="exhibit-card">
-                <h3>Special Experiences</h3>
-                <ul>
-                    <li>Behind the Scenes Tour: $45</li>
-                    <li>Animal Encounter: $35</li>
-                    <li>Dive with Sharks: $150</li>
-                </ul>
+            <div class="feature-grid">
+                <div class="enhanced-card">
+                    <h3><span class="icon">🕒</span>Opening Hours</h3>
+                    <ul>
+                        <li>Monday - Friday: 9:00 AM - 6:00 PM</li>
+                        <li>Saturday - Sunday: 8:00 AM - 7:00 PM</li>
+                        <li>Holidays: 8:00 AM - 7:00 PM</li>
+                    </ul>
+                    <p><strong>Last admission is 1 hour before closing</strong></p>
+                </div>
+                <div class="enhanced-card">
+                    <h3><span class="icon">📍</span>Location</h3>
+                    <p><strong>123 Ocean Drive<br>
+                    Coastal City, CA 90210</strong></p>
+                    <ul>
+                        <li>Free parking available</li>
+                        <li>Public transportation accessible</li>
+                        <li>Wheelchair accessible</li>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="facilities">
-        <h2>Facilities & Services</h2>
-        <div class="exhibit-grid">
-            <div class="exhibit-card">
-                <h3>Dining Options</h3>
-                <ul>
-                    <li>Ocean View Café</li>
-                    <li>Snack bars throughout</li>
-                    <li>Picnic areas available</li>
-                </ul>
+        <section id="directions">
+            <div class="section-header">
+                <h2>Get Directions</h2>
             </div>
-            <div class="exhibit-card">
-                <h3>Guest Services</h3>
-                <ul>
-                    <li>Wheelchair rentals</li>
-                    <li>Stroller rentals</li>
-                    <li>Gift shop</li>
-                    <li>First aid station</li>
-                </ul>
+            <div class="feature-grid">
+                <div class="enhanced-card">
+                    <h3><span class="icon">📍</span>Find Your Way</h3>
+                    <p>Get directions from your current location to the aquarium.</p>
+                    <button id="getLocationBtn" class="location-button">📍 Get My Location</button>
+                    <div id="locationInfo" class="location-info" style="display: none;">
+                        <p><strong>Your Location:</strong> <span id="userLocation">Loading...</span></p>
+                        <p><strong>Distance:</strong> <span id="distance">Calculating...</span></p>
+                        <p><strong>Travel Time:</strong> <span id="travelTime">Calculating...</span></p>
+                        <a id="directionsLink" href="#" target="_blank" class="directions-link">🗺️ Get Directions</a>
+                    </div>
+                </div>
+                <div class="enhanced-card">
+                    <h3><span class="icon">🚗</span>Parking Information</h3>
+                    <ul>
+                        <li>Free parking for all visitors</li>
+                        <li>Handicap accessible spaces</li>
+                        <li>RV and bus parking available</li>
+                        <li>Security cameras in parking area</li>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <section id="tickets">
+            <div class="section-header">
+                <h2>Admission & Experiences</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="pricing-card">
+                    <h3><span class="icon">🎫</span>General Admission</h3>
+                    <div class="price">$29.95</div>
+                    <div class="price-label">Adults (13+)</div>
+                    <ul>
+                        <li>Children (3-12): $19.95</li>
+                        <li>Seniors (65+): $24.95</li>
+                        <li>Children under 3: Free</li>
+                    </ul>
+                </div>
+                <div class="pricing-card">
+                    <h3><span class="icon">🌟</span>Special Experiences</h3>
+                    <div class="price">$45</div>
+                    <div class="price-label">Starting from</div>
+                    <ul>
+                        <li>Behind the Scenes Tour: $45</li>
+                        <li>Animal Encounter: $35</li>
+                        <li>Dive with Sharks: $150</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="facilities">
+            <div class="section-header">
+                <h2>Facilities & Services</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="enhanced-card">
+                    <h3><span class="icon">🍽️</span>Dining Options</h3>
+                    <ul>
+                        <li>Ocean View Café</li>
+                        <li>Snack bars throughout</li>
+                        <li>Picnic areas available</li>
+                    </ul>
+                </div>
+                <div class="enhanced-card">
+                    <h3><span class="icon">🛎️</span>Guest Services</h3>
+                    <ul>
+                        <li>Wheelchair rentals</li>
+                        <li>Stroller rentals</li>
+                        <li>Gift shop</li>
+                        <li>First aid station</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
 
     <footer>
         <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
     </footer>
+
+    <script>
+        // Aquarium coordinates (123 Ocean Drive, Coastal City, CA 90210)
+        const AQUARIUM_LAT = 34.0522; // Approximate coordinates for demonstration
+        const AQUARIUM_LNG = -118.2437;
+        const AQUARIUM_ADDRESS = "123 Ocean Drive, Coastal City, CA 90210";
+
+        // IndexedDB setup
+        let db;
+        const dbName = 'AquariumLocationDB';
+        const dbVersion = 1;
+        const storeName = 'locationHistory';
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, dbVersion);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+                        store.createIndex('timestamp', 'timestamp', { unique: false });
+                        store.createIndex('userLat', 'userLat', { unique: false });
+                        store.createIndex('userLng', 'userLng', { unique: false });
+                    }
+                };
+            });
+        }
+
+        // Save location data to IndexedDB
+        async function saveLocationData(locationData) {
+            try {
+                await initDB();
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                
+                const locationRecord = {
+                    timestamp: new Date().toISOString(),
+                    userLat: locationData.userLat,
+                    userLng: locationData.userLng,
+                    distance: locationData.distance,
+                    travelTime: locationData.travelTime,
+                    aquariumLat: AQUARIUM_LAT,
+                    aquariumLng: AQUARIUM_LNG,
+                    aquariumAddress: AQUARIUM_ADDRESS
+                };
+                
+                const request = store.add(locationRecord);
+                
+                request.onsuccess = () => {
+                    console.log('Location data saved to IndexedDB');
+                };
+                
+                request.onerror = () => {
+                    console.error('Error saving location data:', request.error);
+                };
+            } catch (error) {
+                console.error('Error initializing database:', error);
+            }
+        }
+
+        // Get location history from IndexedDB
+        async function getLocationHistory() {
+            try {
+                await initDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([storeName], 'readonly');
+                    const store = transaction.objectStore(storeName);
+                    const request = store.getAll();
+                    
+                    request.onsuccess = () => {
+                        resolve(request.result);
+                    };
+                    
+                    request.onerror = () => {
+                        reject(request.error);
+                    };
+                });
+            } catch (error) {
+                console.error('Error getting location history:', error);
+                return [];
+            }
+        }
+
+        // Display location history
+        async function displayLocationHistory() {
+            try {
+                const history = await getLocationHistory();
+                if (history.length > 0) {
+                    const latestLocation = history[history.length - 1];
+                    console.log('Latest location from IndexedDB:', latestLocation);
+                    
+                    // Optionally display the latest location info
+                    document.getElementById('userLocation').textContent = 
+                        `${latestLocation.userLat.toFixed(4)}, ${latestLocation.userLng.toFixed(4)}`;
+                    document.getElementById('distance').textContent = 
+                        `${latestLocation.distance.toFixed(1)} miles`;
+                    document.getElementById('travelTime').textContent = 
+                        `${latestLocation.travelTime} minutes`;
+                    
+                    const directionsUrl = `https://www.google.com/maps/dir/${latestLocation.userLat},${latestLocation.userLng}/${AQUARIUM_ADDRESS}`;
+                    const directionsLink = document.getElementById('directionsLink');
+                    directionsLink.href = directionsUrl;
+                    
+                    document.getElementById('locationInfo').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error displaying location history:', error);
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Try to display the last known location from IndexedDB
+            displayLocationHistory();
+        });
+
+        document.getElementById('getLocationBtn').addEventListener('click', function() {
+            const button = this;
+            const locationInfo = document.getElementById('locationInfo');
+            
+            // Disable button and show loading state
+            button.disabled = true;
+            button.textContent = '📍 Getting Location...';
+            
+            // Clear any previous error messages
+            const existingError = document.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async function(position) {
+                        const userLat = position.coords.latitude;
+                        const userLng = position.coords.longitude;
+                        
+                        // Calculate distance
+                        const distance = calculateDistance(userLat, userLng, AQUARIUM_LAT, AQUARIUM_LNG);
+                        
+                        // Estimate travel time (assuming average speed of 30 mph)
+                        const travelTime = Math.round(distance / 30 * 60); // Convert to minutes
+                        
+                        // Save to IndexedDB
+                        const locationData = {
+                            userLat: userLat,
+                            userLng: userLng,
+                            distance: distance,
+                            travelTime: travelTime
+                        };
+                        
+                        await saveLocationData(locationData);
+                        
+                        // Update display
+                        document.getElementById('userLocation').textContent = 
+                            `${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
+                        document.getElementById('distance').textContent = 
+                            `${distance.toFixed(1)} miles`;
+                        document.getElementById('travelTime').textContent = 
+                            `${travelTime} minutes`;
+                        
+                        // Create directions link
+                        const directionsUrl = `https://www.google.com/maps/dir/${userLat},${userLng}/${AQUARIUM_ADDRESS}`;
+                        const directionsLink = document.getElementById('directionsLink');
+                        directionsLink.href = directionsUrl;
+                        
+                        // Show location info
+                        locationInfo.style.display = 'block';
+                        
+                        // Reset button
+                        button.disabled = false;
+                        button.textContent = '📍 Get My Location';
+                    },
+                    function(error) {
+                        let errorMessage = 'Unable to get your location.';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Location access was denied. Please allow location access and try again.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'Location request timed out.';
+                                break;
+                        }
+                        
+                        // Show error message
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'error-message';
+                        errorDiv.textContent = errorMessage;
+                        button.parentNode.insertBefore(errorDiv, button.nextSibling);
+                        
+                        // Reset button
+                        button.disabled = false;
+                        button.textContent = '📍 Get My Location';
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            } else {
+                // Geolocation not supported
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = 'Geolocation is not supported by this browser.';
+                button.parentNode.insertBefore(errorDiv, button.nextSibling);
+                
+                button.disabled = false;
+                button.textContent = '📍 Get My Location';
+            }
+        });
+
+        // Calculate distance between two points using Haversine formula
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 3959; // Earth's radius in miles
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+    </script>
 </body>
 </html>

@@ -1,9 +1,11 @@
 body {
     margin: 0;
     padding: 0;
+    padding-bottom: 2rem;
     font-family: Arial, sans-serif;
     background-color: #f0f8ff; /* Light blue background */
     color: #003366; /* Dark blue text */
+    min-height: 100vh;
 }
 
 header {
@@ -191,7 +193,5 @@ footer {
     color: white;
     text-align: center;
     padding: 1rem;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
+    margin-top: 2rem;
 }

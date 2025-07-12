@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics Dashboard - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .analytics-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 80px;
+        }
+
+        .analytics-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        .analytics-header h2 {
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            border: 1px solid #e6e6e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .metric-card h3 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .metric-change.positive {
+            color: #28a745;
+        }
+
+        .metric-change.negative {
+            color: #dc3545;
+        }
+
+        .chart-section {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .chart-section h3 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+        }
+
+        .chart-container {
+            background: white;
+            border: 1px solid #e6e6e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .report-controls {
+            background-color: #e6f3ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #333;
+            min-width: 120px;
+        }
+
+        .control-group input,
+        .control-group select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .control-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .control-button:hover {
+            background-color: #0055b3;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .login-required {
+            text-align: center;
+            padding: 3rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+
+        .login-required h3 {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .login-required p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-button {
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #0055b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Analytics Dashboard</h2>
+        <p>View visitor statistics, revenue reports, and operational metrics</p>
+    </section>
+
+    <div class="analytics-container" id="analyticsContent" style="display: none;">
+        <div class="analytics-header">
+            <h2>Analytics Dashboard</h2>
+            <p>Comprehensive reporting and data analysis for aquarium operations</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3>👥 Today's Visitors</h3>
+                <div class="metric-value">1,247</div>
+                <div class="metric-change positive">+12% vs yesterday</div>
+            </div>
+
+            <div class="metric-card">
+                <h3>💰 Revenue Today</h3>
+                <div class="metric-value">$8,420</div>
+                <div class="metric-change positive">+8% vs yesterday</div>
+            </div>
+
+            <div class="metric-card">
+                <h3>🎫 Tickets Sold</h3>
+                <div class="metric-value">892</div>
+                <div class="metric-change positive">+15% vs yesterday</div>
+            </div>
+
+            <div class="metric-card">
+                <h3>🛍️ Gift Shop Sales</h3>
+                <div class="metric-value">$1,280</div>
+                <div class="metric-change negative">-3% vs yesterday</div>
+            </div>
+
+            <div class="metric-card">
+                <h3>📚 Education Programs</h3>
+                <div class="metric-value">156</div>
+                <div class="metric-change positive">+22% vs yesterday</div>
+            </div>
+
+            <div class="metric-card">
+                <h3>⭐ Visitor Rating</h3>
+                <div class="metric-value">4.7/5</div>
+                <div class="metric-change positive">+0.2 vs last week</div>
+            </div>
+        </div>
+
+        <div class="report-controls">
+            <h3>📊 Generate Reports</h3>
+            <div class="control-group">
+                <label for="reportType">Report Type:</label>
+                <select id="reportType">
+                    <option value="visitor">Visitor Statistics</option>
+                    <option value="revenue">Revenue Report</option>
+                    <option value="operations">Operations Metrics</option>
+                    <option value="education">Education Programs</option>
+                    <option value="maintenance">Maintenance Log</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="reportDate">Date Range:</label>
+                <input type="date" id="reportStartDate">
+                <span>to</span>
+                <input type="date" id="reportEndDate">
+            </div>
+            <div class="control-group">
+                <button class="control-button" onclick="generateReport()">Generate Report</button>
+                <button class="control-button" onclick="exportData()">Export Data</button>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3>📈 Visitor Trends</h3>
+            <div class="chart-container">
+                <div class="chart-placeholder">
+                    📊 Visitor Attendance Chart<br>
+                    <small>Weekly visitor data visualization</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3>💰 Revenue Analysis</h3>
+            <div class="chart-container">
+                <div class="chart-placeholder">
+                    💰 Revenue Chart<br>
+                    <small>Monthly revenue breakdown</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3>📋 Top Exhibits Performance</h3>
+            <div class="chart-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Exhibit</th>
+                            <th>Visitors Today</th>
+                            <th>Avg. Time Spent</th>
+                            <th>Rating</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>🐠 Coral Reef</td>
+                            <td>342</td>
+                            <td>15 min</td>
+                            <td>4.8/5</td>
+                            <td>↗️ +5%</td>
+                        </tr>
+                        <tr>
+                            <td>🌊 Deep Sea</td>
+                            <td>298</td>
+                            <td>12 min</td>
+                            <td>4.6/5</td>
+                            <td>↗️ +3%</td>
+                        </tr>
+                        <tr>
+                            <td>🦭 Marine Mammals</td>
+                            <td>267</td>
+                            <td>20 min</td>
+                            <td>4.9/5</td>
+                            <td>↗️ +8%</td>
+                        </tr>
+                        <tr>
+                            <td>🎓 Education Center</td>
+                            <td>156</td>
+                            <td>25 min</td>
+                            <td>4.7/5</td>
+                            <td>↗️ +12%</td>
+                        </tr>
+                        <tr>
+                            <td>🛍️ Gift Shop</td>
+                            <td>184</td>
+                            <td>8 min</td>
+                            <td>4.5/5</td>
+                            <td>↘️ -2%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3>📅 Upcoming Events</h3>
+            <div class="chart-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Expected Attendance</th>
+                            <th>Revenue Projection</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>🐋 Whale Watching Tour</td>
+                            <td>Tomorrow</td>
+                            <td>45</td>
+                            <td>$2,250</td>
+                            <td>✅ Confirmed</td>
+                        </tr>
+                        <tr>
+                            <td>🎨 Art & Science Workshop</td>
+                            <td>This Weekend</td>
+                            <td>32</td>
+                            <td>$960</td>
+                            <td>✅ Confirmed</td>
+                        </tr>
+                        <tr>
+                            <td>🌊 Ocean Conservation Talk</td>
+                            <td>Next Week</td>
+                            <td>28</td>
+                            <td>$420</td>
+                            <td>⏳ Pending</td>
+                        </tr>
+                        <tr>
+                            <td>🎓 School Field Trip</td>
+                            <td>Next Month</td>
+                            <td>120</td>
+                            <td>$3,600</td>
+                            <td>✅ Confirmed</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-required" id="loginRequired">
+        <h3>🔒 Access Restricted</h3>
+        <p>This analytics dashboard requires employee authentication. Please log in to access visitor statistics and operational reports.</p>
+        <a href="login.html" class="login-button">Employee Login</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        // Check if user is logged in
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('employeeLoggedIn');
+            
+            if (isLoggedIn === 'true') {
+                document.getElementById('analyticsContent').style.display = 'block';
+                document.getElementById('loginRequired').style.display = 'none';
+            } else {
+                document.getElementById('analyticsContent').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'block';
+            }
+        }
+
+        // Generate report function
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates.');
+                return;
+            }
+
+            alert(`Generating ${reportType} report for ${startDate} to ${endDate}...\nReport will be available in 2 minutes.`);
+        }
+
+        // Export data function
+        function exportData() {
+            alert('Exporting current data to CSV format...\nFile will be downloaded automatically.');
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            
+            // Set default date range (last 30 days)
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            document.getElementById('reportStartDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+            document.getElementById('reportEndDate').value = today.toISOString().split('T')[0];
+        });
+
+        // Auto-refresh login status every 30 seconds
+        setInterval(checkLoginStatus, 30000);
+    </script>
+</body>
+</html> 

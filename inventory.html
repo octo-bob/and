@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Equipment Inventory - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .inventory-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 80px;
+        }
+
+        .inventory-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        .inventory-header h2 {
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+
+        .inventory-controls {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #333;
+            min-width: 120px;
+        }
+
+        .control-group input,
+        .control-group select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .control-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .control-button:hover {
+            background-color: #0055b3;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .inventory-card {
+            background: white;
+            border: 1px solid #e6e6e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .inventory-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .inventory-card h3 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-operational {
+            background-color: #28a745;
+        }
+
+        .status-maintenance {
+            background-color: #ffc107;
+        }
+
+        .status-repair {
+            background-color: #dc3545;
+        }
+
+        .status-retired {
+            background-color: #6c757d;
+        }
+
+        .inventory-details {
+            margin-bottom: 1rem;
+        }
+
+        .inventory-details p {
+            margin: 0.25rem 0;
+            color: #666;
+        }
+
+        .inventory-details strong {
+            color: #333;
+        }
+
+        .priority-high {
+            border-left: 4px solid #dc3545;
+        }
+
+        .priority-medium {
+            border-left: 4px solid #ffc107;
+        }
+
+        .priority-low {
+            border-left: 4px solid #28a745;
+        }
+
+        .stats-panel {
+            background-color: #e6f3ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #0066cc;
+        }
+
+        .stat-item p {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .login-required {
+            text-align: center;
+            padding: 3rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+
+        .login-required h3 {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .login-required p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-button {
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #0055b3;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Image Upload Styles */
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .image-card {
+            background: white;
+            border: 1px solid #e6e6e6;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-card h4 {
+            margin: 0.5rem 0;
+            color: #0066cc;
+            font-size: 0.9rem;
+        }
+
+        .image-card p {
+            margin: 0.25rem 0;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .upload-progress {
+            background-color: #e6f3ff;
+            border: 1px solid #0066cc;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #0066cc;
+            transition: width 0.3s ease;
+        }
+
+        .file-info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .file-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: #0066cc;
+        }
+
+        .file-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .file-list li {
+            padding: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-list li:last-child {
+            border-bottom: none;
+        }
+
+        .file-extension {
+            background-color: #0066cc;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .file-download-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .file-download-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .file-extension-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .delete-file-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .delete-file-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Equipment Inventory</h2>
+        <p>Track aquarium equipment, maintenance schedules, and replacement parts</p>
+    </section>
+
+    <div class="inventory-container" id="inventoryContent" style="display: none;">
+        <div class="inventory-header">
+            <h2>Equipment Inventory System</h2>
+            <p>Manage and track all aquarium equipment and maintenance schedules</p>
+        </div>
+
+        <div class="stats-panel">
+            <h3>📊 Inventory Overview</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h4>Total Equipment</h4>
+                    <p>156</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Operational</h4>
+                    <p>142</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Under Maintenance</h4>
+                    <p>8</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Needs Repair</h4>
+                    <p>6</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="inventory-controls">
+            <h3>🔍 Search Equipment</h3>
+            <div class="control-group">
+                <label for="searchEquipment">Equipment:</label>
+                <input type="text" id="searchEquipment" placeholder="Search equipment...">
+            </div>
+            <div class="control-group">
+                <label for="searchCategory">Category:</label>
+                <select id="searchCategory">
+                    <option value="">All Categories</option>
+                    <option value="filtration">Filtration Systems</option>
+                    <option value="lighting">Lighting Systems</option>
+                    <option value="pumps">Pumps & Motors</option>
+                    <option value="sensors">Sensors & Monitors</option>
+                    <option value="electrical">Electrical Equipment</option>
+                    <option value="safety">Safety Equipment</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="searchStatus">Status:</label>
+                <select id="searchStatus">
+                    <option value="">All Status</option>
+                    <option value="operational">Operational</option>
+                    <option value="maintenance">Under Maintenance</option>
+                    <option value="repair">Needs Repair</option>
+                    <option value="retired">Retired</option>
+                </select>
+                <button class="control-button" onclick="searchEquipment()">Search</button>
+            </div>
+        </div>
+
+        <div class="inventory-controls">
+            <h3>📁 Upload Equipment Files</h3>
+            <p>Upload photos, documents, and other files for equipment documentation and maintenance records</p>
+            <div class="control-group">
+                <label for="imageUpload">Select Files:</label>
+                <input type="file" id="imageUpload" multiple>
+            </div>
+            <div class="control-group">
+                <label for="equipmentCategory">Equipment Category:</label>
+                <select id="equipmentCategory">
+                    <option value="filtration">Filtration Systems</option>
+                    <option value="lighting">Lighting Systems</option>
+                    <option value="pumps">Pumps & Motors</option>
+                    <option value="sensors">Sensors & Monitors</option>
+                    <option value="electrical">Electrical Equipment</option>
+                    <option value="safety">Safety Equipment</option>
+                    <option value="general">General Equipment</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="equipmentName">Equipment Name (Optional):</label>
+                <input type="text" id="equipmentName" placeholder="Leave blank to use original filenames">
+            </div>
+            <div class="control-group">
+                <button class="control-button" onclick="uploadImages()">📤 Upload Files</button>
+                <button class="control-button" onclick="browseUploadedImages()" style="background-color: #28a745;">📁 Browse Uploaded Files</button>
+            </div>
+            <div id="uploadStatus" style="margin-top: 1rem; padding: 1rem; border-radius: 4px; display: none;"></div>
+        </div>
+
+        <div class="inventory-grid">
+            <div class="inventory-card priority-low">
+                <h3>
+                    <span class="status-indicator status-operational"></span>
+                    🔧 Main Filtration Pump
+                </h3>
+                <div class="inventory-details">
+                    <p><strong>Location:</strong> Filtration Room A</p>
+                    <p><strong>Model:</strong> AquaTech Pro-5000</p>
+                    <p><strong>Serial Number:</strong> AT-2024-001</p>
+                    <p><strong>Installation Date:</strong> Jan 15, 2024</p>
+                    <p><strong>Last Maintenance:</strong> 2 weeks ago</p>
+                    <p><strong>Next Maintenance:</strong> 2 weeks from now</p>
+                    <p><strong>Status:</strong> Operational</p>
+                </div>
+            </div>
+
+            <div class="inventory-card priority-medium">
+                <h3>
+                    <span class="status-indicator status-maintenance"></span>
+                    💡 LED Lighting System
+                </h3>
+                <div class="inventory-details">
+                    <p><strong>Location:</strong> Coral Reef Tank</p>
+                    <p><strong>Model:</strong> MarineLED XR30</p>
+                    <p><strong>Serial Number:</strong> ML-2023-045</p>
+                    <p><strong>Installation Date:</strong> Mar 20, 2023</p>
+                    <p><strong>Last Maintenance:</strong> 1 week ago</p>
+                    <p><strong>Next Maintenance:</strong> 3 weeks from now</p>
+                    <p><strong>Status:</strong> Under Maintenance</p>
+                </div>
+            </div>
+
+            <div class="inventory-card priority-high">
+                <h3>
+                    <span class="status-indicator status-repair"></span>
+                    🌡️ Temperature Sensor
+                </h3>
+                <div class="inventory-details">
+                    <p><strong>Location:</strong> Deep Sea Exhibit</p>
+                    <p><strong>Model:</strong> TempSense Pro</p>
+                    <p><strong>Serial Number:</strong> TS-2024-012</p>
+                    <p><strong>Installation Date:</strong> Feb 10, 2024</p>
+                    <p><strong>Last Maintenance:</strong> 3 days ago</p>
+                    <p><strong>Next Maintenance:</strong> N/A</p>
+                    <p><strong>Status:</strong> Needs Repair</p>
+                </div>
+            </div>
+
+            <div class="inventory-card priority-low">
+                <h3>
+                    <span class="status-indicator status-operational"></span>
+                    🚰 Water Circulation Pump
+                </h3>
+                <div class="inventory-details">
+                    <p><strong>Location:</strong> Marine Mammals Tank</p>
+                    <p><strong>Model:</strong> Circulator Max-2000</p>
+                    <p><strong>Serial Number:</strong> CM-2023-078</p>
+                    <p><strong>Installation Date:</strong> Jun 5, 2023</p>
+                    <p><strong>Last Maintenance:</strong> 1 month ago</p>
+                    <p><strong>Next Maintenance:</strong> 2 months from now</p>
+                    <p><strong>Status:</strong> Operational</p>
+                </div>
+            </div>
+
+            <div class="inventory-card priority-medium">
+                <h3>
+                    <span class="status-indicator status-maintenance"></span>
+                    🔌 Electrical Panel
+                </h3>
+                <div class="inventory-details">
+                    <p><strong>Location:</strong> Electrical Room</p>
+                    <p><strong>Model:</strong> PowerGrid Elite</p>
+                    <p><strong>Serial Number:</strong> PG-2022-003</p>
+                    <p><strong>Installation Date:</strong> Sep 15, 2022</p>
+                    <p><strong>Last Maintenance:</strong> 2 days ago</p>
+                    <p><strong>Next Maintenance:</strong> 1 week from now</p>
+                    <p><strong>Status:</strong> Under Maintenance</p>
+                </div>
+            </div>
+
+            <div class="inventory-card priority-low">
+                <h3>
+                    <span class="status-indicator status-operational"></span>
+                    📡 pH Monitoring System
+                </h3>
+                <div class="inventory-details">
+                    <p><strong>Location:</strong> All Tanks</p>
+                    <p><strong>Model:</strong> pHMaster 360</p>
+                    <p><strong>Serial Number:</strong> PH-2024-008</p>
+                    <p><strong>Installation Date:</strong> Jan 30, 2024</p>
+                    <p><strong>Last Maintenance:</strong> 1 week ago</p>
+                    <p><strong>Next Maintenance:</strong> 3 weeks from now</p>
+                    <p><strong>Status:</strong> Operational</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3>📋 Maintenance Schedule</h3>
+            <div class="chart-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Equipment</th>
+                            <th>Location</th>
+                            <th>Last Maintenance</th>
+                            <th>Next Maintenance</th>
+                            <th>Assigned To</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>🔧 Main Filtration Pump</td>
+                            <td>Filtration Room A</td>
+                            <td>2 weeks ago</td>
+                            <td>2 weeks from now</td>
+                            <td>Bob Miller</td>
+                            <td>✅ Scheduled</td>
+                        </tr>
+                        <tr>
+                            <td>💡 LED Lighting System</td>
+                            <td>Coral Reef Tank</td>
+                            <td>1 week ago</td>
+                            <td>3 weeks from now</td>
+                            <td>Mike Johnson</td>
+                            <td>🔄 In Progress</td>
+                        </tr>
+                        <tr>
+                            <td>🌡️ Temperature Sensor</td>
+                            <td>Deep Sea Exhibit</td>
+                            <td>3 days ago</td>
+                            <td>N/A</td>
+                            <td>Tom Davis</td>
+                            <td>🚨 Urgent</td>
+                        </tr>
+                        <tr>
+                            <td>🚰 Water Circulation Pump</td>
+                            <td>Marine Mammals Tank</td>
+                            <td>1 month ago</td>
+                            <td>2 months from now</td>
+                            <td>Bob Miller</td>
+                            <td>✅ Scheduled</td>
+                        </tr>
+                        <tr>
+                            <td>🔌 Electrical Panel</td>
+                            <td>Electrical Room</td>
+                            <td>2 days ago</td>
+                            <td>1 week from now</td>
+                            <td>Mike Johnson</td>
+                            <td>🔄 In Progress</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-required" id="loginRequired">
+        <h3>🔒 Access Restricted</h3>
+        <p>This equipment inventory requires employee authentication. Please log in to access equipment tracking and maintenance management.</p>
+        <a href="login.html" class="login-button">Employee Login</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('uploadStatus');
+            const colors = {
+                success: '#d4edda',
+                error: '#f8d7da',
+                warning: '#fff3cd',
+                info: '#d1ecf1'
+            };
+            
+            statusDiv.style.backgroundColor = colors[type] || colors.info;
+            statusDiv.style.borderColor = type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : type === 'warning' ? '#ffeaa7' : '#bee5eb';
+            statusDiv.style.color = type === 'success' ? '#155724' : type === 'error' ? '#721c24' : type === 'warning' ? '#856404' : '#0c5460';
+            statusDiv.innerHTML = `<p>${message}</p>`;
+            statusDiv.style.display = 'block';
+            console.log('Status message displayed:', message);
+        }
+
+        // Update progress bar
+        function updateProgress(percentage) {
+            const statusDiv = document.getElementById('uploadStatus');
+            if (!statusDiv.querySelector('.progress-bar')) {
+                statusDiv.innerHTML += `
+                    <div class="upload-progress">
+                        <p>Upload Progress</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const progressFill = statusDiv.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = `${percentage}%`;
+            }
+        }
+
+        // Download file function
+        function downloadFile(fileName, extension, isLocalStorage) {
+            console.log(`Downloading file: ${fileName} (${extension})`);
+            
+            if (isLocalStorage) {
+                // For localStorage files, get the data and create a download link
+                const savedFiles = JSON.parse(localStorage.getItem('equipmentImages') || '[]');
+                const fileData = savedFiles.find(file => file.name === fileName);
+                
+                if (fileData) {
+                    const link = document.createElement('a');
+                    link.href = fileData.data;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showStatus(`Downloaded ${fileName}`, 'success');
+                } else {
+                    showStatus(`File ${fileName} not found in localStorage`, 'error');
+                }
+            } else {
+                // For virtual file system files, read the file and download it
+                if (fileSystemRoot) {
+                    fileSystemRoot.getDirectory(extension, { create: false }, function(dir) {
+                        dir.getFile(fileName, { create: false }, function(fileEntry) {
+                            fileEntry.file(function(file) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    const link = document.createElement('a');
+                                    link.href = e.target.result;
+                                    link.download = fileName;
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    showStatus(`Downloaded ${fileName}`, 'success');
+                                };
+                                reader.readAsDataURL(file);
+                            }, function(error) {
+                                console.error(`Error reading file ${fileName}:`, error);
+                                showStatus(`Failed to read file ${fileName}`, 'error');
+                            });
+                        }, function(error) {
+                            console.error(`Error accessing file ${fileName}:`, error);
+                            showStatus(`File ${fileName} not found`, 'error');
+                        });
+                    }, function(error) {
+                        console.error(`Error accessing directory ${extension}:`, error);
+                        showStatus(`Directory ${extension} not found`, 'error');
+                    });
+                } else {
+                    showStatus('Virtual file system not available', 'error');
+                }
+            }
+        }
+
+        // Delete file function
+        function deleteFile(fileName, extension, isLocalStorage) {
+            console.log(`Deleting file: ${fileName} (${extension})`);
+            
+            if (confirm(`Are you sure you want to delete "${fileName}"?`)) {
+                if (isLocalStorage) {
+                    // For localStorage files, remove from localStorage
+                    const savedFiles = JSON.parse(localStorage.getItem('equipmentImages') || '[]');
+                    const updatedFiles = savedFiles.filter(file => file.name !== fileName);
+                    localStorage.setItem('equipmentImages', JSON.stringify(updatedFiles));
+                    showStatus(`Deleted ${fileName} from localStorage`, 'success');
+                } else {
+                    // For virtual file system files, delete from the file system
+                    if (fileSystemRoot) {
+                        fileSystemRoot.getDirectory(extension, { create: false }, function(dir) {
+                            dir.getFile(fileName, { create: false }, function(fileEntry) {
+                                fileEntry.remove(function() {
+                                    showStatus(`Deleted ${fileName} from virtual file system`, 'success');
+                                    // Refresh the gallery to show updated list
+                                    setTimeout(() => {
+                                        browseUploadedImages();
+                                    }, 1000);
+                                }, function(error) {
+                                    console.error(`Error deleting file ${fileName}:`, error);
+                                    showStatus(`Failed to delete ${fileName}`, 'error');
+                                });
+                            }, function(error) {
+                                console.error(`Error accessing file ${fileName}:`, error);
+                                showStatus(`File ${fileName} not found`, 'error');
+                            });
+                        }, function(error) {
+                            console.error(`Error accessing directory ${extension}:`, error);
+                            showStatus(`Directory ${extension} not found`, 'error');
+                        });
+                    } else {
+                        showStatus('Virtual file system not available', 'error');
+                    }
+                }
+                
+                // Refresh the gallery to show updated list
+                setTimeout(() => {
+                    browseUploadedImages();
+                }, 1000);
+            }
+        }
+
+        // Check if user is logged in
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('employeeLoggedIn');
+            
+            if (isLoggedIn === 'true') {
+                document.getElementById('inventoryContent').style.display = 'block';
+                document.getElementById('loginRequired').style.display = 'none';
+            } else {
+                document.getElementById('inventoryContent').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'block';
+            }
+        }
+
+        // Search equipment function
+        function searchEquipment() {
+            const equipment = document.getElementById('searchEquipment').value;
+            const category = document.getElementById('searchCategory').value;
+            const status = document.getElementById('searchStatus').value;
+
+            alert(`Searching for:\nEquipment: ${equipment || 'All'}\nCategory: ${category || 'All'}\nStatus: ${status || 'All'}`);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+        });
+
+        // Auto-refresh login status every 30 seconds
+        setInterval(checkLoginStatus, 30000);
+
+        // Virtual File System variables
+        let virtualFileSystem = {};
+        let fileSystemRoot = null;
+        let dynamicExtensions = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'zip', 'rar']);
+
+        // Initialize Virtual File System
+        function initializeVirtualFileSystem() {
+            try {
+                // Create a virtual file system using the File and Directory Entries API
+                if ('webkitRequestFileSystem' in window) {
+                    window.webkitRequestFileSystem(
+                        window.PERSISTENT,
+                        50 * 1024 * 1024, // 50MB quota
+                        function(fs) {
+                            fileSystemRoot = fs.root;
+                            console.log('Virtual file system initialized successfully');
+                            // Create extension folders
+                            createExtensionFolders();
+                        },
+                        function(error) {
+                            console.error('Error initializing virtual file system:', error);
+                            showStatus('Failed to initialize virtual file system. Using localStorage fallback.', 'warning');
+                        }
+                    );
+                    return true;
+                } else {
+                    console.log('File and Directory Entries API not supported');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error initializing virtual file system:', error);
+                return false;
+            }
+        }
+
+        // Create folders for different file extensions
+        function createExtensionFolders() {
+            const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+            extensions.forEach(extension => {
+                fileSystemRoot.getDirectory(extension, { create: true }, function(dir) {
+                    console.log(`Created folder for ${extension} files`);
+                }, function(error) {
+                    console.error(`Error creating folder for ${extension}:`, error);
+                });
+            });
+        }
+
+        // Get or create folder for specific file extension
+        function getFolderForExtension(extension, callback) {
+            if (!fileSystemRoot) {
+                console.error('Virtual file system not initialized');
+                callback(null);
+                return;
+            }
+
+            const folderName = extension.toLowerCase();
+            
+            fileSystemRoot.getDirectory(folderName, { create: true }, function(dir) {
+                callback(dir);
+            }, function(error) {
+                console.error(`Error creating folder for ${extension}:`, error);
+                callback(null);
+            });
+        }
+
+        // Upload files function
+        function uploadImages() {
+            const fileInput = document.getElementById('imageUpload');
+            const category = document.getElementById('equipmentCategory').value;
+            const equipmentName = document.getElementById('equipmentName').value.trim();
+            const statusDiv = document.getElementById('uploadStatus');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                // Trigger file picker if no files are selected
+                fileInput.click();
+                return;
+            }
+
+            // Check if Virtual File System API is supported
+            if (!('webkitRequestFileSystem' in window)) {
+                showStatus('File and Directory Entries API is not supported in this browser. Images will be saved to localStorage instead.', 'warning');
+                saveImagesToLocalStorage(fileInput.files, category, equipmentName);
+                return;
+            }
+
+            // Initialize virtual file system if not already done
+            if (!fileSystemRoot) {
+                showStatus('Initializing virtual file system...', 'info');
+                const initialized = initializeVirtualFileSystem();
+                if (!initialized) {
+                    showStatus('Virtual file system initialization failed. Images will be saved to localStorage instead.', 'warning');
+                    saveImagesToLocalStorage(fileInput.files, category, equipmentName);
+                    return;
+                }
+                
+                // Wait a bit for initialization to complete
+                setTimeout(() => {
+                    if (fileSystemRoot) {
+                        processUploads(fileInput.files, category, equipmentName);
+                    } else {
+                        showStatus('Virtual file system not ready. Images will be saved to localStorage instead.', 'warning');
+                        saveImagesToLocalStorage(fileInput.files, category, equipmentName);
+                    }
+                }, 1000);
+            } else {
+                processUploads(fileInput.files, category, equipmentName);
+            }
+        }
+
+        // Process uploads using virtual file system
+        function processUploads(files, category, equipmentName) {
+            const fileArray = Array.from(files);
+            let uploadedCount = 0;
+            let totalFiles = fileArray.length;
+
+            showStatus('Uploading files to virtual file system...', 'info');
+            console.log(`Processing ${totalFiles} files for upload`);
+
+            fileArray.forEach((file, index) => {
+                const extension = file.name.split('.').pop().toLowerCase();
+                console.log(`Processing file: ${file.name} (${extension} extension)`);
+                
+                // Add extension to dynamic set if it's new
+                if (!dynamicExtensions.has(extension)) {
+                    dynamicExtensions.add(extension);
+                    console.log(`Added new extension: ${extension}`);
+                }
+                
+                // Get or create folder for this file extension
+                getFolderForExtension(extension, function(folderHandle) {
+                    if (!folderHandle) {
+                        console.error(`Failed to create folder for ${extension} files`);
+                        showStatus(`Failed to create folder for ${extension} files.`, 'error');
+                        return;
+                    }
+
+                    console.log(`Got folder handle for ${extension}`);
+
+                    // Create filename - use original name if no equipment name provided
+                    let fileName;
+                    if (equipmentName) {
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                        fileName = `${equipmentName}_${category}_${timestamp}.${extension}`;
+                    } else {
+                        // Use original filename with timestamp to avoid conflicts
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                        const originalName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
+                        fileName = `${originalName}_${timestamp}.${extension}`;
+                    }
+                    console.log(`Creating file: ${fileName}`);
+                    
+                    // Create file in the virtual file system
+                    folderHandle.getFile(fileName, { create: true }, function(fileEntry) {
+                        console.log(`File entry created: ${fileName}`);
+                        fileEntry.createWriter(function(writer) {
+                            writer.onwriteend = function() {
+                                uploadedCount++;
+                                console.log(`Successfully uploaded: ${fileName}`);
+                                showStatus(`Uploaded ${uploadedCount}/${totalFiles}: ${fileName}`, 'info');
+                                
+                                // Update progress
+                                const progress = Math.round((uploadedCount / totalFiles) * 100);
+                                updateProgress(progress);
+                                
+                                if (uploadedCount === totalFiles) {
+                                    showStatus(`Successfully uploaded ${uploadedCount} files to virtual file system!`, 'success');
+                                    // Clear form
+                                    document.getElementById('imageUpload').value = '';
+                                    document.getElementById('equipmentName').value = '';
+                                }
+                            };
+                            
+                            writer.onerror = function(error) {
+                                console.error(`Error uploading ${fileName}:`, error);
+                                showStatus(`Failed to upload ${fileName}`, 'error');
+                            };
+                            
+                            console.log(`Writing file: ${fileName} (${file.size} bytes)`);
+                            writer.write(file);
+                        }, function(error) {
+                            console.error(`Error creating writer for ${fileName}:`, error);
+                            showStatus(`Failed to create writer for ${fileName}`, 'error');
+                        });
+                    }, function(error) {
+                        console.error(`Error creating file ${fileName}:`, error);
+                        showStatus(`Failed to create file ${fileName}`, 'error');
+                    });
+                });
+            });
+        }
+
+        // Fallback: Save files to localStorage (for unsupported browsers)
+        function saveImagesToLocalStorage(files, category, equipmentName) {
+            const statusDiv = document.getElementById('uploadStatus');
+            let uploadedCount = 0;
+            const totalFiles = files.length;
+
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileData = {
+                        name: file.name,
+                        data: e.target.result,
+                        category: category,
+                        equipmentName: equipmentName,
+                        uploadDate: new Date().toISOString(),
+                        size: file.size,
+                        type: file.type
+                    };
+
+                    // Save to localStorage
+                    const savedFiles = JSON.parse(localStorage.getItem('equipmentImages') || '[]');
+                    savedFiles.push(fileData);
+                    localStorage.setItem('equipmentImages', JSON.stringify(savedFiles));
+
+                    uploadedCount++;
+                    showStatus(`Saved ${uploadedCount}/${totalFiles} to localStorage: ${file.name}`, 'info');
+
+                    if (uploadedCount === totalFiles) {
+                        showStatus(`Successfully saved ${uploadedCount} files to localStorage!`, 'success');
+                        document.getElementById('imageUpload').value = '';
+                        document.getElementById('equipmentName').value = '';
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Browse uploaded files
+        function browseUploadedImages() {
+            const statusDiv = document.getElementById('uploadStatus');
+            
+            console.log('Browse function called');
+            console.log('webkitRequestFileSystem available:', 'webkitRequestFileSystem' in window);
+            console.log('fileSystemRoot available:', !!fileSystemRoot);
+            
+            if ('webkitRequestFileSystem' in window) {
+                if (!fileSystemRoot) {
+                    showStatus('Virtual file system not initialized. Initializing now...', 'info');
+                    initializeVirtualFileSystem();
+                    
+                    // Wait for initialization and then browse
+                    setTimeout(() => {
+                        if (fileSystemRoot) {
+                            browseFromVirtualFileSystem();
+                        } else {
+                            showStatus('Virtual file system initialization failed. Using localStorage fallback.', 'warning');
+                            const savedFiles = JSON.parse(localStorage.getItem('equipmentImages') || '[]');
+                            displayImageGallery(savedFiles, true);
+                        }
+                    }, 2000);
+                } else {
+                    browseFromVirtualFileSystem();
+                }
+            } else {
+                // Fallback to localStorage
+                showStatus('File and Directory Entries API not supported. Using localStorage fallback.', 'info');
+                const savedFiles = JSON.parse(localStorage.getItem('equipmentImages') || '[]');
+                displayImageGallery(savedFiles, true);
+            }
+        }
+
+                // Browse from virtual file system
+        function browseFromVirtualFileSystem() {
+            showStatus('Browsing uploaded files from virtual file system...', 'info');
+            
+            const fileData = [];
+            let foldersProcessed = 0;
+            let filesProcessed = 0;
+            let totalFiles = 0;
+            
+            console.log('Starting to browse virtual file system...');
+            
+            // Get all existing directories from the file system
+            const reader = fileSystemRoot.createReader();
+            reader.readEntries(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isDirectory) {
+                        const dirName = entry.name.toLowerCase();
+                        if (!dynamicExtensions.has(dirName)) {
+                            dynamicExtensions.add(dirName);
+                            console.log(`Found existing directory: ${dirName}`);
+                        }
+                    }
+                });
+                
+                // Now process with all extensions
+                const allExtensions = Array.from(dynamicExtensions);
+                console.log('Processing extensions:', allExtensions);
+                processAllExtensions(allExtensions);
+            });
+            
+            function processAllExtensions(allExtensions) {
+                // First pass: count total files
+                let foldersChecked = 0;
+                allExtensions.forEach(extension => {
+                fileSystemRoot.getDirectory(extension, { create: false }, function(dir) {
+                    const reader = dir.createReader();
+                    
+                    function countEntries() {
+                        reader.readEntries(function(entries) {
+                            entries.forEach(entry => {
+                                if (entry.isFile) {
+                                    const fileName = entry.name;
+                                    const fileExtension = fileName.split('.').pop().toLowerCase();
+                                    // Accept any file extension
+                                    totalFiles++;
+                                }
+                            });
+                            
+                            // Continue reading if there are more entries
+                            if (entries.length > 0) {
+                                countEntries();
+                            } else {
+                                foldersChecked++;
+                                if (foldersChecked === allExtensions.length) {
+                                    // Now start the actual file processing
+                                    processFiles();
+                                }
+                            }
+                        }, function(error) {
+                            foldersChecked++;
+                            if (foldersChecked === allExtensions.length) {
+                                processFiles();
+                            }
+                        });
+                    }
+                    
+                    countEntries();
+                }, function(error) {
+                    foldersChecked++;
+                    if (foldersChecked === allExtensions.length) {
+                        processFiles();
+                    }
+                });
+            });
+            
+            function processFiles() {
+                console.log(`Total files to process: ${totalFiles}`);
+                
+                if (totalFiles === 0) {
+                    displayImageGallery(fileData);
+                    return;
+                }
+                
+                allExtensions.forEach(extension => {
+                    fileSystemRoot.getDirectory(extension, { create: false }, function(dir) {
+                        console.log(`Processing directory: ${extension}`);
+                        const reader = dir.createReader();
+                        
+                        function readEntries() {
+                            reader.readEntries(function(entries) {
+                                console.log(`Found ${entries.length} entries in ${extension} folder`);
+                                
+                                if (entries.length === 0) {
+                                    foldersProcessed++;
+                                    console.log(`Processed ${foldersProcessed}/${allExtensions.length} folders`);
+                                                                    if (foldersProcessed === allExtensions.length) {
+                                    console.log('All folders processed, displaying gallery');
+                                    console.log('Final fileData array:', fileData);
+                                    displayImageGallery(fileData);
+                                }
+                                    return;
+                                }
+                                
+                                entries.forEach(entry => {
+                                    if (entry.isFile) {
+                                        console.log(`Found file: ${entry.name}`);
+                                        entry.file(function(file) {
+                                            const fileName = entry.name;
+                                            const fileExtension = fileName.split('.').pop().toLowerCase();
+                                            
+                                            // Accept any file extension
+                                            fileData.push({
+                                                name: fileName,
+                                                size: file.size,
+                                                lastModified: file.lastModified,
+                                                extension: fileExtension,
+                                                folder: extension
+                                            });
+                                            console.log(`Added file: ${fileName} (${file.size} bytes)`);
+                                            
+                                            filesProcessed++;
+                                            console.log(`Processed ${filesProcessed}/${totalFiles} files`);
+                                            
+                                            if (filesProcessed === totalFiles) {
+                                                console.log('All files processed, displaying gallery');
+                                                displayImageGallery(fileData);
+                                            }
+                                        });
+                                    }
+                                });
+                                
+                                // Continue reading if there are more entries
+                                readEntries();
+                            }, function(error) {
+                                console.error(`Error reading entries from ${extension}:`, error);
+                            });
+                        }
+                        
+                        readEntries();
+                    }, function(error) {
+                        // Folder doesn't exist, continue to next
+                        console.log(`Directory ${extension} doesn't exist`);
+                        foldersProcessed++;
+                                            if (foldersProcessed === allExtensions.length) {
+                        console.log('All folders processed, displaying gallery');
+                        console.log('Final fileData array (no directories):', fileData);
+                        displayImageGallery(fileData);
+                    }
+                    });
+                });
+            }
+        }
+
+        // Display file gallery
+        function displayImageGallery(fileData, isLocalStorage = false) {
+            const statusDiv = document.getElementById('uploadStatus');
+            
+            console.log('Displaying file gallery with data:', fileData);
+            console.log('isLocalStorage:', isLocalStorage);
+            console.log('Number of files:', fileData.length);
+            
+            if (fileData.length === 0) {
+                showStatus('No uploaded files found.', 'info');
+                return;
+            }
+
+            let galleryHTML = '<div class="image-gallery">';
+            
+            fileData.forEach((file, index) => {
+                console.log(`Processing file ${index + 1}:`, file);
+                const sizeKB = Math.round(file.size / 1024);
+                const uploadDate = new Date(file.lastModified || file.uploadDate).toLocaleDateString();
+                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(file.extension || file.type?.split('/')[1]);
+                
+                galleryHTML += `
+                    <div class="image-card">
+                        ${isLocalStorage && isImage ? `<img src="${file.data}" alt="${file.name}">` : ''}
+                        <h4><a href="#" onclick="downloadFile('${file.name}', '${file.extension || file.type?.split('/')[1] || 'Unknown'}', ${isLocalStorage})" class="file-download-link">${file.name}</a></h4>
+                        <p><strong>Size:</strong> ${sizeKB} KB</p>
+                        <p><strong>Uploaded:</strong> ${uploadDate}</p>
+                        <p><strong>Category:</strong> ${file.category || 'Unknown'}</p>
+                        <div class="file-extension-container">
+                            <span class="file-extension">${file.extension || file.type?.split('/')[1] || 'Unknown'}</span>
+                            <button class="delete-file-btn" onclick="deleteFile('${file.name}', '${file.extension || file.type?.split('/')[1] || 'Unknown'}', ${isLocalStorage})" title="Delete file">✕</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            galleryHTML += '</div>';
+            
+            console.log('Generated gallery HTML length:', galleryHTML.length);
+            statusDiv.innerHTML = galleryHTML;
+            statusDiv.style.display = 'block';
+            
+            console.log('Gallery should now be visible');
+        }
+
+        // Test virtual file system
+        function testVirtualFileSystem() {
+            console.log('Testing virtual file system...');
+            console.log('webkitRequestFileSystem available:', 'webkitRequestFileSystem' in window);
+            console.log('fileSystemRoot available:', !!fileSystemRoot);
+            
+            if (fileSystemRoot) {
+                console.log('File system root is available');
+                // Try to list root contents
+                const reader = fileSystemRoot.createReader();
+                reader.readEntries(function(entries) {
+                    console.log('Root directory entries:', entries);
+                    entries.forEach(entry => {
+                        console.log(`Entry: ${entry.name}, isFile: ${entry.isFile}, isDirectory: ${entry.isDirectory}`);
+                    });
+                }, function(error) {
+                    console.error('Error reading root directory:', error);
+                });
+            } else {
+                console.log('File system root is not available');
+            }
+        }
+
+        // Test display function
+        function testDisplay() {
+            console.log('Testing display function...');
+            const testData = [
+                {
+                    name: 'test-image.jpg',
+                    size: 1024,
+                    lastModified: Date.now(),
+                    extension: 'jpg',
+                    folder: 'jpg'
+                }
+            ];
+            displayImageGallery(testData);
+        }
+        }
+    </script>
+</body>
+</html> 

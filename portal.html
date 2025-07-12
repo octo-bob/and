@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Portal - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .portal-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 80px;
+        }
+
+        .portal-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        .portal-header h2 {
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+        }
+
+        .portal-header p {
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, #0066cc, #004d99);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .welcome-banner h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .welcome-banner p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .tool-card {
+            background: white;
+            border: 2px solid #e6e6e6;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card:hover {
+            border-color: #0066cc;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 102, 204, 0.15);
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0066cc, #004d99);
+        }
+
+        .tool-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .tool-card h3 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .tool-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .tool-button {
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+
+        .tool-button:hover {
+            background-color: #0055b3;
+        }
+
+        .status-panel {
+            background-color: #e6f3ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .status-panel h3 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .status-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .status-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #0066cc;
+        }
+
+        .status-item p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .quick-actions {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .quick-actions h3 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:hover {
+            background-color: #218838;
+        }
+
+        .action-button.warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .action-button.warning:hover {
+            background-color: #e0a800;
+        }
+
+        .action-button.danger {
+            background-color: #dc3545;
+        }
+
+        .action-button.danger:hover {
+            background-color: #c82333;
+        }
+
+        .login-required {
+            text-align: center;
+            padding: 3rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+
+        .login-required h3 {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .login-required p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-button {
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #0055b3;
+        }
+
+        .logout-section {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e6e6e6;
+        }
+
+        .logout-button {
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .logout-button:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Employee Portal</h2>
+        <p>Access all aquarium management tools and systems</p>
+    </section>
+
+    <div class="portal-container" id="portalContent" style="display: none;">
+        <div class="portal-header">
+            <h2>Employee Portal</h2>
+            <p>Welcome to your central hub for aquarium operations</p>
+        </div>
+
+        <div class="welcome-banner">
+            <h3>👋 Welcome, Employee!</h3>
+            <p>Today's date: <span id="currentDate"></span> | Current time: <span id="currentTime"></span></p>
+        </div>
+
+        <div class="status-panel">
+            <h3>📊 System Status Overview</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <h4>🛡️ Security Systems</h4>
+                    <p>6 cameras online</p>
+                </div>
+                <div class="status-item">
+                    <h4>🐠 Tank Management</h4>
+                    <p>All systems operational</p>
+                </div>
+                <div class="status-item">
+                    <h4>👥 Visitor Count</h4>
+                    <p>127 visitors today</p>
+                </div>
+                <div class="status-item">
+                    <h4>🌡️ Environmental</h4>
+                    <p>Temperature: 22°C</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-grid">
+            <div class="tool-card">
+                <span class="tool-icon">🐠</span>
+                <h3>Tank Management System</h3>
+                <p>Monitor water quality, temperature, pH levels, and control filtration systems across all aquarium tanks. Access real-time sensor data and automated controls.</p>
+                <a href="tank-management.html" class="tool-button">Access Tank Management</a>
+            </div>
+
+            <div class="tool-card">
+                <span class="tool-icon">📹</span>
+                <h3>Security Monitoring</h3>
+                <p>View live security camera feeds from all areas of the aquarium. Monitor visitor safety, animal welfare, and facility security in real-time.</p>
+                <a href="security.html" class="tool-button">View Security Cameras</a>
+            </div>
+
+            <div class="tool-card">
+                <span class="tool-icon">📋</span>
+                <h3>Maintenance Log</h3>
+                <p>Record and track maintenance activities, equipment repairs, and scheduled inspections. Keep detailed logs of all aquarium operations.</p>
+                <a href="maintenance.html" class="tool-button">Access Maintenance Log</a>
+            </div>
+
+            <div class="tool-card">
+                <span class="tool-icon">👥</span>
+                <h3>Staff Directory</h3>
+                <p>Access employee contact information, schedules, and department assignments. Manage staff communications and coordination.</p>
+                <a href="staff.html" class="tool-button">View Staff Directory</a>
+            </div>
+
+            <div class="tool-card">
+                <span class="tool-icon">📊</span>
+                <h3>Analytics Dashboard</h3>
+                <p>View visitor statistics, revenue reports, and operational metrics. Generate reports for management and regulatory compliance.</p>
+                <a href="analytics.html" class="tool-button">View Analytics</a>
+            </div>
+
+            <div class="tool-card">
+                <span class="tool-icon">🔧</span>
+                <h3>Equipment Inventory</h3>
+                <p>Track aquarium equipment, maintenance schedules, and replacement parts. Manage inventory and procurement processes.</p>
+                <a href="inventory.html" class="tool-button">Access Inventory</a>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <h3>⚡ Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="#" class="action-button">📞 Emergency Contact</a>
+                <a href="#" class="action-button">🚨 Incident Report</a>
+                <a href="#" class="action-button warning">⚠️ Maintenance Alert</a>
+                <a href="#" class="action-button">📝 Daily Log</a>
+                <a href="#" class="action-button">🔔 Notifications</a>
+                <a href="#" class="action-button danger">🚪 Emergency Exit</a>
+            </div>
+        </div>
+
+        <div class="logout-section">
+            <a href="#" class="logout-button" onclick="logout()">🚪 Logout</a>
+        </div>
+    </div>
+
+    <div class="login-required" id="loginRequired">
+        <h3>🔒 Access Restricted</h3>
+        <p>This employee portal requires authentication. Please log in to access aquarium management tools and systems.</p>
+        <a href="login.html" class="login-button">Employee Login</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        // Check if user is logged in
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('employeeLoggedIn');
+            
+            if (isLoggedIn === 'true') {
+                document.getElementById('portalContent').style.display = 'block';
+                document.getElementById('loginRequired').style.display = 'none';
+                updateDateTime();
+            } else {
+                document.getElementById('portalContent').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'block';
+            }
+        }
+
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const dateString = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            document.getElementById('currentDate').textContent = dateString;
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('employeeLoggedIn');
+            alert('You have been logged out successfully.');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            // Update time every minute
+            setInterval(updateDateTime, 60000);
+        });
+
+        // Auto-refresh login status every 30 seconds
+        setInterval(checkLoginStatus, 30000);
+    </script>
+</body>
+</html> 

@@ -4,6 +4,244 @@
     <meta charset="UTF-8">
     <title>Support Us - Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .voice-recorder {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .recording-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .record-btn, .stop-btn, .play-btn, .save-btn, .send-btn {
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .record-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .record-btn:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+
+        .stop-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .stop-btn:hover:not(:disabled) {
+            background-color: #5a6268;
+        }
+
+        .play-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .play-btn:hover:not(:disabled) {
+            background-color: #218838;
+        }
+
+        .save-btn {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .save-btn:hover:not(:disabled) {
+            background-color: #e0a800;
+        }
+
+        .send-btn {
+            background-color: #0066cc;
+            color: white;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background-color: #0055b3;
+        }
+
+        .record-btn:disabled, .stop-btn:disabled, .play-btn:disabled, .save-btn:disabled, .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .recording-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .recording-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .pulse {
+            width: 12px;
+            height: 12px;
+            background-color: #dc3545;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .recording-time {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .message-info {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .message-info p {
+            margin: 0.25rem 0;
+        }
+
+        .recording-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #721c24;
+        }
+
+        /* Postcard Form Styles */
+        .postcard-form {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .postcard-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .postcard-form input,
+        .postcard-form textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .postcard-form input:focus,
+        .postcard-form textarea:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-top: 0.25rem;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+
+        .submit-btn {
+            background-color: #0066cc;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 1.5rem;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #0055b3;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            color: #155724;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -108,8 +346,409 @@
         </div>
     </section>
 
+    <section id="voice-message">
+        <h2>Send Us a Voice Message</h2>
+        <div class="exhibit-grid">
+            <div class="exhibit-card">
+                <h3>🎤 Record Your Message</h3>
+                <p>Share your thoughts, feedback, or questions with our team through a voice message.</p>
+                <div class="voice-recorder">
+                    <div class="recording-controls">
+                        <button id="recordBtn" class="record-btn">🎤 Start Recording</button>
+                        <button id="stopBtn" class="stop-btn" disabled>⏹️ Stop Recording</button>
+                        <button id="playBtn" class="play-btn" disabled>▶️ Play Message</button>
+                        <button id="saveBtn" class="save-btn" disabled>💾 Save Message</button>
+                        <button id="sendBtn" class="send-btn" disabled>📤 Send Message</button>
+                    </div>
+                    <div class="recording-status">
+                        <div id="recordingIndicator" class="recording-indicator" style="display: none;">
+                            <span class="pulse"></span> Recording...
+                        </div>
+                        <div id="recordingTime" class="recording-time">00:00</div>
+                    </div>
+                    <div id="messageInfo" class="message-info" style="display: none;">
+                        <p><strong>Message Duration:</strong> <span id="messageDuration">0 seconds</span></p>
+                        <p><strong>File Size:</strong> <span id="fileSize">0 KB</span></p>
+                    </div>
+                    <div id="recordingError" class="recording-error" style="display: none;">
+                        <p>❌ Unable to record. Please check your microphone permissions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="exhibit-card">
+                <h3>📞 Contact Information</h3>
+                <p>Prefer to call or email? Here's how to reach us:</p>
+                <ul>
+                    <li><strong>Phone:</strong> (555) 123-4567</li>
+                    <li><strong>Email:</strong> info@aquaticnaturediscovery.org</li>
+                    <li><strong>Hours:</strong> Mon-Fri 9AM-6PM</li>
+                    <li><strong>Address:</strong> 123 Ocean Drive, Coastal City, CA</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="postcard">
+        <h2>Request a Postcard</h2>
+        <div class="exhibit-grid">
+            <div class="exhibit-card">
+                <h3>📮 Get a Postcard from the Aquarium</h3>
+                <p>Share your address and we'll send you a beautiful postcard featuring our marine life!</p>
+                <form id="postcardForm" class="postcard-form">
+                    <div class="form-group">
+                        <label for="fullName">Full Name *</label>
+                        <input type="text" id="fullName" name="fullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Street Address *</label>
+                        <input type="text" id="address" name="address" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City *</label>
+                            <input type="text" id="city" name="city" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State/Province *</label>
+                            <input type="text" id="state" name="state" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="zipCode">ZIP/Postal Code *</label>
+                            <input type="text" id="zipCode" name="zipCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country *</label>
+                            <input type="text" id="country" name="country" value="United States" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="Optional - for delivery updates">
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Personal Message (Optional)</label>
+                        <textarea id="message" name="message" rows="3" placeholder="Any special message you'd like us to include with your postcard..."></textarea>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="newsletter" name="newsletter">
+                        <label for="newsletter">Subscribe to our newsletter for aquarium updates and events</label>
+                    </div>
+                    <button type="submit" class="submit-btn">📮 Request Postcard</button>
+                </form>
+                <div id="postcardSuccess" class="success-message" style="display: none;">
+                    <p>✅ Thank you! Your postcard request has been submitted. We'll send your postcard within 2-3 weeks.</p>
+                </div>
+            </div>
+            <div class="exhibit-card">
+                <h3>🎨 Our Postcard Collection</h3>
+                <p>Each postcard features stunning photography of our marine life:</p>
+                <ul>
+                    <li>🐋 Humpback whales in our deep sea exhibit</li>
+                    <li>🦈 Great white sharks from our shark encounter</li>
+                    <li>🐙 Giant Pacific octopus in our kelp forest</li>
+                    <li>🐠 Tropical fish from our coral reef</li>
+                    <li>🦭 Sea lions from our coastal habitat</li>
+                </ul>
+                <p><strong>Note:</strong> Postcards are sent via standard mail and typically arrive within 2-3 weeks. International requests may take longer.</p>
+            </div>
+        </div>
+    </section>
+
     <footer>
         <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
     </footer>
+
+    <script>
+        // Voice recording variables
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob;
+        let audioUrl;
+        let recordingStartTime;
+        let recordingTimer;
+        let isRecording = false;
+
+        // DOM elements
+        const recordBtn = document.getElementById('recordBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const playBtn = document.getElementById('playBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+        const recordingTime = document.getElementById('recordingTime');
+        const messageInfo = document.getElementById('messageInfo');
+        const messageDuration = document.getElementById('messageDuration');
+        const fileSize = document.getElementById('fileSize');
+        const recordingError = document.getElementById('recordingError');
+
+        // Initialize recording functionality
+        async function initRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    // Update message info
+                    const duration = Math.round((Date.now() - recordingStartTime) / 1000);
+                    messageDuration.textContent = `${duration} seconds`;
+                    fileSize.textContent = `${Math.round(audioBlob.size / 1024)} KB`;
+                    messageInfo.style.display = 'block';
+                    
+                    // Enable play, save, and send buttons
+                    playBtn.disabled = false;
+                    saveBtn.disabled = false;
+                    sendBtn.disabled = false;
+                };
+
+                // Hide error message if it was showing
+                recordingError.style.display = 'none';
+                
+                // Start recording immediately after getting permission
+                startRecording();
+                
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                recordingError.style.display = 'block';
+                recordBtn.disabled = false; // Re-enable the button so user can try again
+            }
+        }
+
+        // Start recording
+        async function startRecording() {
+            if (!mediaRecorder) {
+                // Request microphone permission and initialize recording
+                await initRecording();
+                return;
+            }
+
+            audioChunks = [];
+            recordingStartTime = Date.now();
+            isRecording = true;
+            
+            mediaRecorder.start();
+            
+            // Update UI
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+            playBtn.disabled = true;
+            saveBtn.disabled = true;
+            sendBtn.disabled = true;
+            recordingIndicator.style.display = 'flex';
+            messageInfo.style.display = 'none';
+            
+            // Start timer
+            startTimer();
+        }
+
+        // Stop recording
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                // Update UI
+                recordBtn.disabled = false;
+                stopBtn.disabled = true;
+                recordingIndicator.style.display = 'none';
+                
+                // Stop timer
+                clearInterval(recordingTimer);
+            }
+        }
+
+        // Play recorded message
+        function playMessage() {
+            if (audioUrl) {
+                const audio = new Audio(audioUrl);
+                audio.play();
+            }
+        }
+
+        // Save message to file system
+        async function saveMessage() {
+            if (audioBlob) {
+                try {
+                    // Check if File System Access API is supported
+                    if ('showSaveFilePicker' in window) {
+                        // Create a file handle
+                        const fileName = `aquarium-message-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.wav`;
+                        const fileHandle = await window.showSaveFilePicker({
+                            suggestedName: fileName,
+                            types: [{
+                                description: 'Audio Files',
+                                accept: {
+                                    'audio/wav': ['.wav']
+                                }
+                            }]
+                        });
+
+                        // Create a writable stream
+                        const writable = await fileHandle.createWritable();
+                        
+                        // Write the audio blob to the file
+                        await writable.write(audioBlob);
+                        await writable.close();
+
+                        alert(`Voice message saved successfully as "${fileName}"!`);
+                        
+                        // Reset the recorder
+                        resetRecorder();
+                    } else {
+                        // Fallback for browsers that don't support File System Access API
+                        const fileName = `aquarium-message-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.wav`;
+                        const url = URL.createObjectURL(audioBlob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        alert(`Voice message downloaded as "${fileName}"!`);
+                        
+                        // Reset the recorder
+                        resetRecorder();
+                    }
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        // User cancelled the save dialog
+                        console.log('Save cancelled by user');
+                    } else {
+                        console.error('Error saving file:', error);
+                        alert('Error saving file. Please try again.');
+                    }
+                }
+            }
+        }
+
+        // Send message
+        function sendMessage() {
+            if (audioBlob) {
+                // In a real application, this would upload the audio file to a server
+                // For demo purposes, we'll show a success message
+                alert('Voice message sent successfully! Our team will review your message and get back to you soon.');
+                
+                // Reset the recorder
+                resetRecorder();
+            }
+        }
+
+        // Start recording timer
+        function startTimer() {
+            recordingTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                recordingTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Reset recorder
+        function resetRecorder() {
+            audioChunks = [];
+            audioBlob = null;
+            audioUrl = null;
+            isRecording = false;
+            
+            // Reset UI
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            playBtn.disabled = true;
+            saveBtn.disabled = true;
+            sendBtn.disabled = true;
+            recordingIndicator.style.display = 'none';
+            messageInfo.style.display = 'none';
+            recordingTime.textContent = '00:00';
+            
+            // Clear timer
+            clearInterval(recordingTimer);
+        }
+
+        // Event listeners
+        recordBtn.addEventListener('click', startRecording);
+        stopBtn.addEventListener('click', stopRecording);
+        playBtn.addEventListener('click', playMessage);
+        saveBtn.addEventListener('click', saveMessage);
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Initialize recording when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Don't request microphone permission on page load
+            // Permission will be requested when user clicks "Start Recording"
+            
+            // Initialize postcard form
+            initPostcardForm();
+        });
+
+        // Postcard form functionality
+        function initPostcardForm() {
+            const postcardForm = document.getElementById('postcardForm');
+            const postcardSuccess = document.getElementById('postcardSuccess');
+
+            postcardForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form data
+                const formData = new FormData(postcardForm);
+                const postcardData = {
+                    fullName: formData.get('fullName'),
+                    address: formData.get('address'),
+                    city: formData.get('city'),
+                    state: formData.get('state'),
+                    zipCode: formData.get('zipCode'),
+                    country: formData.get('country'),
+                    email: formData.get('email'),
+                    message: formData.get('message'),
+                    newsletter: formData.get('newsletter') === 'on',
+                    submittedAt: new Date().toISOString()
+                };
+
+                // Save to localStorage for demo purposes
+                // In a real application, this would be sent to a server
+                savePostcardRequest(postcardData);
+                
+                // Show success message
+                postcardForm.style.display = 'none';
+                postcardSuccess.style.display = 'block';
+                
+                // Reset form
+                postcardForm.reset();
+                
+                // Hide success message after 5 seconds and show form again
+                setTimeout(() => {
+                    postcardSuccess.style.display = 'none';
+                    postcardForm.style.display = 'block';
+                }, 5000);
+            });
+        }
+
+        function savePostcardRequest(data) {
+            try {
+                // Get existing requests or initialize empty array
+                const existingRequests = JSON.parse(localStorage.getItem('postcardRequests') || '[]');
+                
+                // Add new request
+                existingRequests.push(data);
+                
+                // Save back to localStorage
+                localStorage.setItem('postcardRequests', JSON.stringify(existingRequests));
+                
+                console.log('Postcard request saved:', data);
+                console.log('Total requests saved:', existingRequests.length);
+            } catch (error) {
+                console.error('Error saving postcard request:', error);
+            }
+        }
+    </script>
 </body>
 </html>

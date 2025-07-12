@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tank Management - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="scripts/webhid.js" defer></script>
+    <style>
+        .tank-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 80px; /* Space for fixed footer */
+        }
+
+        .tank-section {
+            margin-bottom: 2rem;
+        }
+
+        .tank-section h2 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+        }
+
+        .device-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s;
+        }
+
+        .device-button:hover {
+            background-color: #0055b3;
+        }
+
+        #log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .info-text {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .status-panel {
+            background-color: #e6f3ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .status-panel h3 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+        }
+
+        .tank-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .tank-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .tank-card h4 {
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-online {
+            background-color: #28a745;
+        }
+
+        .status-offline {
+            background-color: #dc3545;
+        }
+
+        .status-connecting {
+            background-color: #ffc107;
+        }
+
+        .parameter-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .parameter-list li {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .parameter-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Tank Management System</h2>
+        <p>Monitor and control aquarium systems with Arduino-based sensors and controllers.</p>
+    </section>
+
+    <div class="tank-container">
+        <div class="status-panel">
+            <h3>System Status</h3>
+            <p class="info-text">
+                Connect Arduino devices to monitor water quality, temperature, pH levels, 
+                and control filtration systems across all aquarium tanks.
+            </p>
+            <div class="tank-grid">
+                <div class="tank-card">
+                    <h4>Coral Reef Tank</h4>
+                    <span class="status-indicator status-online"></span>Online
+                    <ul class="parameter-list">
+                        <li>Temp: 25.2°C</li>
+                        <li>pH: 8.1</li>
+                        <li>Salinity: 35 ppt</li>
+                    </ul>
+                </div>
+                <div class="tank-card">
+                    <h4>Deep Sea Exhibit</h4>
+                    <span class="status-indicator status-online"></span>Online
+                    <ul class="parameter-list">
+                        <li>Temp: 18.5°C</li>
+                        <li>pH: 7.8</li>
+                        <li>Pressure: 2.1 atm</li>
+                    </ul>
+                </div>
+                <div class="tank-card">
+                    <h4>Marine Mammals</h4>
+                    <span class="status-indicator status-connecting"></span>Connecting
+                    <ul class="parameter-list">
+                        <li>Temp: 22.0°C</li>
+                        <li>pH: 7.9</li>
+                        <li>Flow: 120 L/min</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="tank-section">
+            <h2>Arduino Device Connection</h2>
+            <p class="info-text">
+                Connect Arduino-based sensors and controllers for real-time monitoring of:
+            </p>
+            <ul>
+                <li><strong>Water Quality Sensors:</strong> pH, temperature, salinity, dissolved oxygen</li>
+                <li><strong>Environmental Controls:</strong> Lighting, filtration, heating/cooling systems</li>
+                <li><strong>Safety Monitors:</strong> Water level, pressure, flow rate sensors</li>
+                <li><strong>Automation Systems:</strong> Feeding schedules, water changes, emergency protocols</li>
+            </ul>
+            <button id="requestDeviceButton" class="device-button">
+                Connect Arduino Device
+            </button>
+            <div id="log"></div>
+        </div>
+
+        <div class="tank-section">
+            <h2>Device Management</h2>
+            <p class="info-text">
+                Manage connected Arduino devices and configure monitoring parameters. 
+                Each device can be calibrated and programmed for specific tank requirements.
+            </p>
+            <div class="tank-grid">
+                <div class="tank-card">
+                    <h4>Connected Devices</h4>
+                    <p>3 Arduino Uno</p>
+                    <p>2 Arduino Mega</p>
+                    <p>1 Arduino Nano</p>
+                </div>
+                <div class="tank-card">
+                    <h4>Sensor Types</h4>
+                    <p>Temperature: 8 sensors</p>
+                    <p>pH: 6 sensors</p>
+                    <p>Flow: 4 sensors</p>
+                </div>
+                <div class="tank-card">
+                    <h4>Last Calibration</h4>
+                    <p>pH Sensors: 2 days ago</p>
+                    <p>Temp Sensors: 1 week ago</p>
+                    <p>Flow Sensors: 3 days ago</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tank-section">
+            <h2>Emergency Protocols</h2>
+            <p class="info-text">
+                Automated emergency response systems activate when parameters exceed safe limits:
+            </p>
+            <ul>
+                <li><strong>Temperature Alerts:</strong> Automatic cooling system activation</li>
+                <li><strong>pH Monitoring:</strong> Automated buffer dosing systems</li>
+                <li><strong>Water Level:</strong> Overflow protection and backup pumps</li>
+                <li><strong>Power Failures:</strong> Emergency generator activation</li>
+            </ul>
+        </div>
+
+        <div class="tank-section">
+            <h2>Data Logging</h2>
+            <p class="info-text">
+                All sensor data is logged for analysis and regulatory compliance. 
+                Historical data helps optimize tank conditions and predict maintenance needs.
+            </p>
+            <p class="info-text">
+                <em>Data export and reporting features available in the admin panel</em>
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+</body>
+</html>

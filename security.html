@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Security Monitoring - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .security-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 80px;
+        }
+
+        .security-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        .security-header h2 {
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+
+        .camera-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .camera-feed {
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            min-height: 300px;
+        }
+
+        .camera-feed video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-placeholder {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(45deg, #1a1a1a 25%, transparent 25%), 
+                        linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #1a1a1a 75%), 
+                        linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+
+
+        .camera-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .camera-controls {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #333;
+            min-width: 120px;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .control-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .control-button:hover {
+            background-color: #0055b3;
+        }
+
+        .control-button.danger {
+            background-color: #dc3545;
+        }
+
+        .control-button.danger:hover {
+            background-color: #c82333;
+        }
+
+        .status-panel {
+            background-color: #e6f3ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .status-panel h3 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .status-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .status-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #0066cc;
+        }
+
+        .status-item p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .login-required {
+            text-align: center;
+            padding: 3rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+
+        .login-required h3 {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .login-required p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-button {
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #0055b3;
+        }
+
+        .recording-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .alert-panel {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-panel h4 {
+            color: #856404;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .alert-panel p {
+            color: #856404;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Security Monitoring System</h2>
+        <p>Real-time surveillance and monitoring for aquarium security</p>
+    </section>
+
+    <div class="security-container" id="securityContent" style="display: none;">
+        <div class="security-header">
+            <h2>Live Security Camera Feeds</h2>
+            <p>Monitor aquarium areas and ensure visitor and animal safety</p>
+        </div>
+
+        <div class="alert-panel">
+            <h4>⚠️ Security Alert</h4>
+            <p>Unauthorized access attempt detected at Holding Tank - Camera 4</p>
+        </div>
+
+        <div class="camera-controls">
+            <div class="control-group">
+                <label for="cameraSelect">Select Camera:</label>
+                <select id="cameraSelect">
+                    <option value="all">All Cameras</option>
+                    <option value="coral-reef">Coral Reef Exhibit</option>
+                    <option value="deep-sea">Deep Sea Exhibit</option>
+                    <option value="marine-mammals">Marine Mammals</option>
+                    <option value="holding-tank">Holding Tank</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="dateSelect">Date:</label>
+                <input type="date" id="dateSelect" value="">
+                <button class="control-button" onclick="loadRecordings()">Load Recordings</button>
+            </div>
+            <div class="control-group">
+                <button class="control-button" onclick="startRecording()">Start Recording</button>
+                <button class="control-button danger" onclick="stopRecording()">Stop Recording</button>
+                <button class="control-button" onclick="exportFootage()">Export Footage</button>
+            </div>
+        </div>
+
+        <div class="status-panel">
+            <h3>System Status</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <h4>Active Cameras</h4>
+                    <p>4 of 4 online</p>
+                </div>
+                <div class="status-item">
+                    <h4>Recording Status</h4>
+                    <p>All cameras recording</p>
+                </div>
+                <div class="status-item">
+                    <h4>Storage Available</h4>
+                    <p>2.3 TB remaining</p>
+                </div>
+                <div class="status-item">
+                    <h4>Last Backup</h4>
+                    <p>2 hours ago</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="camera-grid">
+            <div class="camera-feed">
+                <div class="camera-placeholder">
+                    <video autoplay muted loop style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        <source src="video/coral-reef.mp4" type="video/mp4">
+                        <div style="text-align: center;">
+                            <div>Coral Reef Exhibit</div>
+                        </div>
+                    </video>
+                </div>
+                <div class="recording-indicator">REC</div>
+                <div class="camera-info">Camera 1 - Coral Reef Exhibit</div>
+            </div>
+
+            <div class="camera-feed">
+                <div class="camera-placeholder">
+                    <video autoplay muted loop style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        <source src="video/deep-sea.mp4" type="video/mp4">
+                        <div style="text-align: center;">
+                            <div>Deep Sea Exhibit</div>
+                        </div>
+                    </video>
+                </div>
+                <div class="recording-indicator">REC</div>
+                <div class="camera-info">Camera 2 - Deep Sea Exhibit</div>
+            </div>
+
+            <div class="camera-feed">
+                <div class="camera-placeholder">
+                    <video autoplay muted loop style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        <source src="video/marine-mammals.mp4" type="video/mp4">
+                        <div style="text-align: center;">
+                            <div>Marine Mammals</div>
+                        </div>
+                    </video>
+                </div>
+                <div class="recording-indicator">REC</div>
+                <div class="camera-info">Camera 3 - Marine Mammals</div>
+            </div>
+
+            <div class="camera-feed">
+                <div class="camera-placeholder">
+                    <video autoplay muted loop style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        <source src="video/holding-tank.mp4" type="video/mp4">
+                        <div style="text-align: center;">
+                            <div>Holding Tank</div>
+                        </div>
+                    </video>
+                </div>
+                <div class="recording-indicator">REC</div>
+                <div class="camera-info">Camera 4 - Holding Tank</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-required" id="loginRequired">
+        <h3>🔒 Access Restricted</h3>
+        <p>This security monitoring system requires employee authentication. Please log in to access camera feeds and security controls.</p>
+        <a href="login.html" class="login-button">Employee Login</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        // Check if user is logged in (simple session check)
+        function checkLoginStatus() {
+            // In a real application, this would check for a valid session token
+            // For demo purposes, we'll use localStorage to simulate a session
+            const isLoggedIn = localStorage.getItem('employeeLoggedIn');
+            
+            if (isLoggedIn === 'true') {
+                document.getElementById('securityContent').style.display = 'block';
+                document.getElementById('loginRequired').style.display = 'none';
+                // startVideoFeeds(); // Removed as per edit hint
+            } else {
+                document.getElementById('securityContent').style.display = 'none';
+                document.getElementById('loginRequired').style.display = 'block';
+            }
+        }
+
+        // Set current date in date picker
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateSelect').value = today;
+            checkLoginStatus();
+        });
+
+        // Video feed generation functions
+        // Removed as per edit hint
+
+        // Simulate camera control functions
+        function startRecording() {
+            alert('Recording started for all cameras');
+        }
+
+        function stopRecording() {
+            alert('Recording stopped for all cameras');
+        }
+
+        function exportFootage() {
+            alert('Footage export initiated. Files will be available in 5 minutes.');
+        }
+
+        function loadRecordings() {
+            const date = document.getElementById('dateSelect').value;
+            alert(`Loading recordings for ${date}...`);
+        }
+
+        // Auto-refresh login status every 30 seconds
+        setInterval(checkLoginStatus, 30000);
+    </script>
+</body>
+</html> 

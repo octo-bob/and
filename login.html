@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Login - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h2 {
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+        }
+
+        .login-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #0055b3;
+        }
+
+        .login-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .back-link a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .employee-info {
+            background-color: #e6f3ff;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+        </nav>
+    </header>
+
+    <div class="login-container">
+        <div class="login-header">
+            <h2>Employee Login</h2>
+            <p>Access the employee portal and administrative systems</p>
+        </div>
+
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="login-button" id="loginButton">
+                Login
+            </button>
+        </form>
+
+        <div class="error-message" id="errorMessage">
+            Invalid username or password. Please try again.
+        </div>
+
+        <div class="success-message" id="successMessage">
+            Login successful! Redirecting to employee portal...
+        </div>
+
+        <div class="back-link">
+            <a href="index.html">← Back to Home</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        // Known hashed password (this would normally be stored securely on a server)
+        // This is the SHA-256 hash of "aquarium2025"
+        const KNOWN_PASSWORD_HASH = "65457dba64001716cd0aaa2791e8fe1253ce80166f228e64fd23dff5ad85bfc6";
+        
+        // Valid username
+        const VALID_USERNAME = "admin";
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginButton = document.getElementById('loginButton');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            // Debug logging
+            console.log('Username entered:', username);
+            console.log('Password entered:', password);
+            console.log('Expected username:', VALID_USERNAME);
+
+            // Hide any existing messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+
+            // Disable login button during processing
+            loginButton.disabled = true;
+            loginButton.textContent = 'Logging in...';
+
+            // Simulate network delay
+            setTimeout(() => {
+                // Hash the entered password using SHA-256
+                const hashedPassword = CryptoJS.SHA256(password).toString();
+                
+                // Debug logging
+                console.log('Hashed password:', hashedPassword);
+                console.log('Expected hash:', KNOWN_PASSWORD_HASH);
+                console.log('Username match:', username === VALID_USERNAME);
+                console.log('Password hash match:', hashedPassword === KNOWN_PASSWORD_HASH);
+
+                // Check if username and password hash match
+                if (username === VALID_USERNAME && hashedPassword === KNOWN_PASSWORD_HASH) {
+                    // Login successful
+                    console.log('Login successful!');
+                    successMessage.style.display = 'block';
+                    loginButton.textContent = 'Success!';
+                    loginButton.style.backgroundColor = '#28a745';
+
+                    // Set session flag for other pages to detect
+                    localStorage.setItem('employeeLoggedIn', 'true');
+
+                    // Redirect to tank management page after a short delay
+                    setTimeout(() => {
+                        window.location.href = 'portal.html';
+                    }, 1500);
+
+                } else {
+                    // Login failed
+                    console.log('Login failed!');
+                    errorMessage.style.display = 'block';
+                    loginButton.textContent = 'Login';
+                    loginButton.disabled = false;
+                    loginButton.style.backgroundColor = '#0066cc';
+
+                    // Clear password field
+                    document.getElementById('password').value = '';
+                    document.getElementById('password').focus();
+                }
+            }, 1000);
+        });
+
+        // Add some basic security features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prevent right-click context menu
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+
+            // Prevent F12 and other developer tools (basic)
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Focus on username field when page loads
+            document.getElementById('username').focus();
+        });
+    </script>
+</body>
+</html> 
