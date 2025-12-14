@@ -257,7 +257,13 @@
             <a href="support.html">Support Us</a>
             <a href="education.html">Education</a>
             <a href="events.html">Events</a>
-        </nav>
+        
+            <div class="search-container">
+                <form class="search-form" onsubmit="performSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div></nav>
     </header>
 
     <section id="support-hero">
@@ -382,7 +388,7 @@
                     <li><strong>Phone:</strong> (555) 123-4567</li>
                     <li><strong>Email:</strong> info@aquaticnaturediscovery.org</li>
                     <li><strong>Hours:</strong> Mon-Fri 9AM-6PM</li>
-                    <li><strong>Address:</strong> 123 Ocean Drive, Coastal City, CA</li>
+                    <li><strong>Address:</strong> 95 Main Street, Half Moon Bay, CA</li>
                 </ul>
             </div>
         </div>
@@ -466,6 +472,7 @@
         let audioChunks = [];
         let audioBlob;
         let audioUrl;
+        let audioMimeType = 'audio/webm';
         let recordingStartTime;
         let recordingTimer;
         let isRecording = false;
@@ -488,13 +495,15 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
+                audioMimeType = mediaRecorder.mimeType || audioMimeType;
                 
                 mediaRecorder.ondataavailable = (event) => {
                     audioChunks.push(event.data);
                 };
 
                 mediaRecorder.onstop = () => {
-                    audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const recordedType = audioChunks[0]?.type || audioMimeType;
+                    audioBlob = new Blob(audioChunks, { type: recordedType });
                     audioUrl = URL.createObjectURL(audioBlob);
                     
                     // Update message info
@@ -567,10 +576,12 @@
 
         // Play recorded message
         function playMessage() {
-            if (audioUrl) {
-                const audio = new Audio(audioUrl);
-                audio.play();
-            }
+            if (!audioUrl) return;
+            const audio = new Audio(audioUrl);
+            audio.play().catch((err) => {
+                console.error('Playback failed:', err);
+                alert('Unable to play the recording. Please try recording again.');
+            });
         }
 
         // Save message to file system
@@ -657,7 +668,10 @@
         function resetRecorder() {
             audioChunks = [];
             audioBlob = null;
-            audioUrl = null;
+            if (audioUrl) {
+                URL.revokeObjectURL(audioUrl);
+                audioUrl = null;
+            }
             isRecording = false;
             
             // Reset UI
@@ -747,6 +761,17 @@
                 console.log('Total requests saved:', existingRequests.length);
             } catch (error) {
                 console.error('Error saving postcard request:', error);
+            }
+        }
+    </script>
+
+    <script>
+        // Search functionality
+        function performSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
             }
         }
     </script>

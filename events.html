@@ -19,7 +19,13 @@
             <a href="support.html">Support Us</a>
             <a href="education.html">Education</a>
             <a href="events.html">Events</a>
-        </nav>
+        
+            <div class="search-container">
+                <form class="search-form" onsubmit="performSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div></nav>
     </header>
 
     <section id="events-hero">
@@ -31,9 +37,9 @@
         <h2>Featured Events</h2>
         <div class="exhibit-grid">
             <div class="exhibit-card">
-                <img src="https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=500" alt="Night at the Aquarium">
+                <img src="https://images.unsplash.com/photo-1513126921896-532fb2e14853?w=800&auto=format&fit=crop&q=80" alt="Night at the Aquarium">
                 <h3>Night at the Aquarium</h3>
-                <p>June 15, 2024 | 6:00 PM - 10:00 PM</p>
+                <p id="nightEventDate"></p>
                 <ul>
                     <li>After-hours access</li>
                     <li>Special animal encounters</li>
@@ -44,7 +50,7 @@
             <div class="exhibit-card">
                 <img src="https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=500" alt="Marine Conservation Symposium">
                 <h3>Marine Conservation Symposium</h3>
-                <p>July 20-21, 2024 | 9:00 AM - 5:00 PM</p>
+                <p id="symposiumEventDate"></p>
                 <ul>
                     <li>Expert speakers</li>
                     <li>Panel discussions</li>
@@ -106,5 +112,40 @@
     <footer>
         <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
     </footer>
+
+    <script>
+        // Dynamically keep featured event dates near-future
+        (function() {
+            const MS_PER_DAY = 86400000;
+            const today = new Date();
+
+            const formatDate = (d) =>
+                d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+
+            // Night at the Aquarium: ~2 weeks out
+            const nightDate = new Date(today.getTime() + 14 * MS_PER_DAY);
+            const nightText = `${formatDate(nightDate)} | 6:00 PM - 10:00 PM`;
+            const nightEl = document.getElementById('nightEventDate');
+            if (nightEl) nightEl.textContent = nightText;
+
+            // Marine Conservation Symposium: ~5 weeks out, 2-day span
+            const symposiumStart = new Date(today.getTime() + 35 * MS_PER_DAY);
+            const symposiumEnd = new Date(symposiumStart.getTime() + 1 * MS_PER_DAY);
+            const symposiumText = `${formatDate(symposiumStart)} - ${formatDate(symposiumEnd)} | 9:00 AM - 5:00 PM`;
+            const symposiumEl = document.getElementById('symposiumEventDate');
+            if (symposiumEl) symposiumEl.textContent = symposiumText;
+        })();
+    </script>
+
+    <script>
+        // Search functionality
+        function performSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+    </script>
 </body>
 </html>
