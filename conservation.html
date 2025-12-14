@@ -19,7 +19,13 @@
             <a href="support.html">Support Us</a>
             <a href="education.html">Education</a>
             <a href="events.html">Events</a>
-        </nav>
+        
+            <div class="search-container">
+                <form class="search-form" onsubmit="performSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div></nav>
     </header>
 
     <section id="conservation-hero">
@@ -31,7 +37,7 @@
         <h2>Our Conservation Programs</h2>
         <div class="exhibit-grid">
             <div class="exhibit-card">
-                <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500" alt="Coral Restoration">
+                <img src="https://images.unsplash.com/photo-1514907283155-ea5f4094c70c?w=800&auto=format&fit=crop&q=80" alt="Coral Reef Restoration">
                 <h3>Coral Restoration</h3>
                 <p>Our coral restoration program focuses on growing and transplanting coral fragments to damaged reef systems.</p>
                 <ul>
@@ -90,5 +96,16 @@
     <footer>
         <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
     </footer>
+
+    <script>
+        // Search functionality
+        function performSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+    </script>
 </body>
 </html>

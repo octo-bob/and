@@ -67,6 +67,49 @@ nav a:hover {
     border-radius: 4px;
 }
 
+/* Search bar styles */
+.search-container {
+    display: inline-block;
+    margin-left: 1rem;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    width: 200px;
+    background-color: white;
+    color: #333;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 5px rgba(0, 102, 204, 0.3);
+}
+
+.search-btn {
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.search-btn:hover {
+    background-color: #0055b3;
+}
+
 #hero {
     background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920');
     background-size: cover;
@@ -103,6 +146,17 @@ nav a:hover {
 #hero p {
     font-size: 1.5rem;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+[id$="-hero"] {
+    text-align: center;
+}
+
+[id$="-hero"] h2,
+[id$="-hero"] p {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #intro {
@@ -171,7 +225,16 @@ section {
 
 section h2 {
     color: #0066cc;
-    margin-bottom: 1rem;
+    max-width: 1200px;
+    margin: 0 auto 1.5rem;
+    text-align: center;
+}
+
+/* Center standalone section copy to match headings */
+section > p {
+    max-width: 900px;
+    margin: 0 auto 1.5rem;
+    text-align: center;
 }
 
 ul {

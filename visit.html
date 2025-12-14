@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Visit - Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
         .visit-container {
             max-width: 1200px;
@@ -284,6 +285,47 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
+        .mini-map {
+            margin-top: 1.5rem;
+            background: #f7fbff;
+            border: 1px solid #e0e7ef;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .mini-map .leaflet-map {
+            width: 100%;
+            height: 220px;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .mini-map-legend {
+            display: flex;
+            justify-content: flex-start;
+            gap: 1.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.4rem;
+        }
+
+        .user-dot {
+            background: #0066cc;
+        }
+
+        .aquarium-dot {
+            background: #28a745;
+        }
     </style>
 </head>
 <body>
@@ -300,7 +342,13 @@
             <a href="support.html">Support Us</a>
             <a href="education.html">Education</a>
             <a href="events.html">Events</a>
-        </nav>
+        
+            <div class="search-container">
+                <form class="search-form" onsubmit="performSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div></nav>
     </header>
 
     <div class="visit-container">
@@ -344,8 +392,8 @@
                 </div>
                 <div class="enhanced-card">
                     <h3><span class="icon">📍</span>Location</h3>
-                    <p><strong>123 Ocean Drive<br>
-                    Coastal City, CA 90210</strong></p>
+                    <p><strong>95 Main Street<br>
+                    Half Moon Bay, CA</strong></p>
                     <ul>
                         <li>Free parking available</li>
                         <li>Public transportation accessible</li>
@@ -369,6 +417,13 @@
                         <p><strong>Distance:</strong> <span id="distance">Calculating...</span></p>
                         <p><strong>Travel Time:</strong> <span id="travelTime">Calculating...</span></p>
                         <a id="directionsLink" href="#" target="_blank" class="directions-link">🗺️ Get Directions</a>
+                        <div id="locationMapContainer" class="mini-map" style="display: none;">
+                            <div id="locationMap" class="leaflet-map" aria-label="Mini map showing your location and the aquarium"></div>
+                            <div class="mini-map-legend">
+                                <span><span class="legend-dot user-dot"></span>You</span>
+                                <span><span class="legend-dot aquarium-dot"></span>Aquarium</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="enhanced-card">
@@ -441,11 +496,15 @@
         <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
     </footer>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Aquarium coordinates (123 Ocean Drive, Coastal City, CA 90210)
-        const AQUARIUM_LAT = 34.0522; // Approximate coordinates for demonstration
-        const AQUARIUM_LNG = -118.2437;
-        const AQUARIUM_ADDRESS = "123 Ocean Drive, Coastal City, CA 90210";
+        // Aquarium coordinates (95 Main Street, Half Moon Bay, CA)
+        const AQUARIUM_LAT = 37.4636; // Approximate coordinates for Half Moon Bay
+        const AQUARIUM_LNG = -122.4286;
+        const AQUARIUM_ADDRESS = "95 Main Street, Half Moon Bay, CA";
+        let leafletMap;
+        let userMarker;
+        let aquariumMarker;
 
         // IndexedDB setup
         let db;
@@ -552,6 +611,7 @@
                     directionsLink.href = directionsUrl;
                     
                     document.getElementById('locationInfo').style.display = 'block';
+                    renderMiniMap(latestLocation.userLat, latestLocation.userLng);
                 }
             } catch (error) {
                 console.error('Error displaying location history:', error);
@@ -564,94 +624,86 @@
             displayLocationHistory();
         });
 
+        function requestLocation(button, attempt = 1) {
+            const locationInfo = document.getElementById('locationInfo');
+            const options = attempt === 1
+                ? { enableHighAccuracy: true, timeout: 25000, maximumAge: 0 }
+                : { enableHighAccuracy: true, timeout: 40000, maximumAge: 0 };
+
+            navigator.geolocation.getCurrentPosition(
+                async function(position) {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+                    
+                    const distance = calculateDistance(userLat, userLng, AQUARIUM_LAT, AQUARIUM_LNG);
+                    const travelTime = Math.round(distance / 30 * 60); // minutes at ~30 mph
+                    
+                    const locationData = {
+                        userLat: userLat,
+                        userLng: userLng,
+                        distance: distance,
+                        travelTime: travelTime
+                    };
+                    
+                    await saveLocationData(locationData);
+                    
+                    document.getElementById('userLocation').textContent = 
+                        `${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
+                    document.getElementById('distance').textContent = 
+                        `${distance.toFixed(1)} miles`;
+                    document.getElementById('travelTime').textContent = 
+                        `${travelTime} minutes`;
+                    
+                    const directionsUrl = `https://www.google.com/maps/dir/${userLat},${userLng}/${AQUARIUM_ADDRESS}`;
+                    const directionsLink = document.getElementById('directionsLink');
+                    directionsLink.href = directionsUrl;
+                    
+                    locationInfo.style.display = 'block';
+                    renderMiniMap(userLat, userLng);
+                    
+                    button.disabled = false;
+                    button.textContent = '📍 Get My Location';
+                },
+                function(error) {
+                    let errorMessage = 'Unable to get your location.';
+                    if (error.code === error.PERMISSION_DENIED) {
+                        errorMessage = 'Location access was denied. Please allow location access and try again.';
+                    } else if (error.code === error.POSITION_UNAVAILABLE) {
+                        errorMessage = 'Location information is unavailable.';
+                    } else if (error.code === error.TIMEOUT) {
+                        if (attempt === 1) {
+                            // Retry once with relaxed options and more time
+                            return requestLocation(button, attempt + 1);
+                        }
+                        errorMessage = 'Location request timed out. Please ensure location services are on and try again.';
+                    }
+                    
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = errorMessage;
+                    button.parentNode.insertBefore(errorDiv, button.nextSibling);
+                    
+                    button.disabled = false;
+                    button.textContent = '📍 Get My Location';
+                },
+                options
+            );
+        }
+
         document.getElementById('getLocationBtn').addEventListener('click', function() {
             const button = this;
-            const locationInfo = document.getElementById('locationInfo');
             
-            // Disable button and show loading state
             button.disabled = true;
             button.textContent = '📍 Getting Location...';
             
-            // Clear any previous error messages
             const existingError = document.querySelector('.error-message');
             if (existingError) {
                 existingError.remove();
             }
 
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async function(position) {
-                        const userLat = position.coords.latitude;
-                        const userLng = position.coords.longitude;
-                        
-                        // Calculate distance
-                        const distance = calculateDistance(userLat, userLng, AQUARIUM_LAT, AQUARIUM_LNG);
-                        
-                        // Estimate travel time (assuming average speed of 30 mph)
-                        const travelTime = Math.round(distance / 30 * 60); // Convert to minutes
-                        
-                        // Save to IndexedDB
-                        const locationData = {
-                            userLat: userLat,
-                            userLng: userLng,
-                            distance: distance,
-                            travelTime: travelTime
-                        };
-                        
-                        await saveLocationData(locationData);
-                        
-                        // Update display
-                        document.getElementById('userLocation').textContent = 
-                            `${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
-                        document.getElementById('distance').textContent = 
-                            `${distance.toFixed(1)} miles`;
-                        document.getElementById('travelTime').textContent = 
-                            `${travelTime} minutes`;
-                        
-                        // Create directions link
-                        const directionsUrl = `https://www.google.com/maps/dir/${userLat},${userLng}/${AQUARIUM_ADDRESS}`;
-                        const directionsLink = document.getElementById('directionsLink');
-                        directionsLink.href = directionsUrl;
-                        
-                        // Show location info
-                        locationInfo.style.display = 'block';
-                        
-                        // Reset button
-                        button.disabled = false;
-                        button.textContent = '📍 Get My Location';
-                    },
-                    function(error) {
-                        let errorMessage = 'Unable to get your location.';
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                errorMessage = 'Location access was denied. Please allow location access and try again.';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                errorMessage = 'Location information is unavailable.';
-                                break;
-                            case error.TIMEOUT:
-                                errorMessage = 'Location request timed out.';
-                                break;
-                        }
-                        
-                        // Show error message
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'error-message';
-                        errorDiv.textContent = errorMessage;
-                        button.parentNode.insertBefore(errorDiv, button.nextSibling);
-                        
-                        // Reset button
-                        button.disabled = false;
-                        button.textContent = '📍 Get My Location';
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 60000
-                    }
-                );
+                requestLocation(button);
             } else {
-                // Geolocation not supported
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'error-message';
                 errorDiv.textContent = 'Geolocation is not supported by this browser.';
@@ -673,6 +725,50 @@
                 Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             return R * c;
+        }
+
+        function renderMiniMap(userLat, userLng) {
+            const container = document.getElementById('locationMapContainer');
+            const mapEl = document.getElementById('locationMap');
+            if (!container || !mapEl) return;
+            
+            container.style.display = 'block';
+            
+            if (!leafletMap) {
+                leafletMap = L.map(mapEl, { zoomControl: true, attributionControl: true });
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(leafletMap);
+                
+                aquariumMarker = L.marker([AQUARIUM_LAT, AQUARIUM_LNG], {
+                    title: 'Aquarium'
+                }).addTo(leafletMap).bindPopup('Aquatic Nature Discovery');
+            }
+
+            if (userMarker) {
+                userMarker.setLatLng([userLat, userLng]);
+            } else {
+                userMarker = L.marker([userLat, userLng], { title: 'You' }).addTo(leafletMap);
+            }
+
+            const bounds = L.latLngBounds([
+                [userLat, userLng],
+                [AQUARIUM_LAT, AQUARIUM_LNG]
+            ]).pad(0.35);
+
+            leafletMap.fitBounds(bounds);
+        }
+    </script>
+
+    <script>
+        // Search functionality
+        function performSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            }
         }
     </script>
 </body>

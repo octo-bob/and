@@ -274,7 +274,13 @@
             <a href="education.html">Education</a>
             <a href="events.html">Events</a>
             <a href="portal.html">Employee Portal</a>
-        </nav>
+        
+            <div class="search-container">
+                <form class="search-form" onsubmit="performSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div></nav>
     </header>
 
     <section id="hero">
@@ -435,6 +441,17 @@
 
         // Auto-refresh login status every 30 seconds
         setInterval(checkLoginStatus, 30000);
+    </script>
+
+    <script>
+        // Search functionality
+        function performSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            }
+        }
     </script>
 </body>
 </html> 
