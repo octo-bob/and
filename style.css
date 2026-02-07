@@ -20,6 +20,8 @@ header {
     align-items: center;
     justify-content: center;
     gap: 1rem;
+    text-decoration: none;
+    color: inherit;
     margin-bottom: 1rem;
     background-color: white;
     padding: 0.5rem;
@@ -257,4 +259,106 @@ footer {
     text-align: center;
     padding: 1rem;
     margin-top: 2rem;
+}
+
+/* Dark mode overrides */
+body.dark-mode {
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+}
+body.dark-mode header {
+    background-color: #16213e;
+}
+body.dark-mode nav {
+    background-color: #0f3460;
+}
+body.dark-mode footer {
+    background-color: #0f3460;
+}
+body.dark-mode #intro {
+    background-color: #16213e;
+}
+body.dark-mode #intro h2 {
+    color: #4da8ff;
+}
+body.dark-mode #featured-exhibits {
+    background-color: #1a1a2e;
+}
+body.dark-mode section h2 {
+    color: #4da8ff;
+}
+body.dark-mode .exhibit-card {
+    background-color: #16213e;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+body.dark-mode .exhibit-card h3 {
+    color: #4da8ff;
+}
+body.dark-mode .exhibit-card p {
+    color: #b0b0b0;
+}
+body.dark-mode .logo-container {
+    background-color: #16213e;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+body.dark-mode .logo-container h1 {
+    color: #4da8ff;
+}
+body.dark-mode a {
+    color: #4da8ff;
+}
+body.dark-mode .search-input {
+    background-color: #16213e;
+    color: #e0e0e0;
+    border-color: #0f3460;
+}
+/* Generic dark mode overrides for page-specific inline styles */
+body.dark-mode [class*="container"],
+body.dark-mode [class*="card"],
+body.dark-mode [class*="item"],
+body.dark-mode [class*="result"],
+body.dark-mode [class*="entry"],
+body.dark-mode [class*="row"] {
+    background-color: #16213e;
+    color: #e0e0e0;
+}
+body.dark-mode [class*="panel"],
+body.dark-mode [class*="status-panel"],
+body.dark-mode [class*="summary"],
+body.dark-mode [class*="info"] {
+    background-color: #0f3460;
+    color: #e0e0e0;
+}
+body.dark-mode h2, body.dark-mode h3, body.dark-mode h4 {
+    color: #4da8ff;
+}
+body.dark-mode p {
+    color: #ccc;
+}
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: #16213e;
+    color: #e0e0e0;
+    border-color: #0f3460;
+}
+body.dark-mode table {
+    color: #e0e0e0;
+}
+body.dark-mode th {
+    background-color: #0f3460;
+    color: #e0e0e0;
+}
+body.dark-mode td {
+    background-color: #16213e;
+    border-color: #0f3460;
+}
+body.dark-mode tr:nth-child(even) td {
+    background-color: #1a1a3e;
+}
+body.dark-mode .welcome-banner {
+    background: linear-gradient(135deg, #0f3460, #16213e);
+}
+body.dark-mode button:not(.dark-mode-toggle) {
+    color: #e0e0e0;
 }

@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reports - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .reports-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+        }
+
+        .report-sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .report-sidebar h3 {
+            color: #0066cc;
+            margin: 0 0 1rem 0;
+        }
+
+        .report-type-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .report-type-list li {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .report-type-list li:hover {
+            background: #e6f3ff;
+        }
+
+        .report-type-list li.active {
+            background: #0066cc;
+            color: white;
+        }
+
+        .main-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .report-header h2 {
+            color: #0066cc;
+            margin: 0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0055b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .saved-reports {
+            margin-top: 2rem;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 2rem;
+        }
+
+        .saved-reports h3 {
+            color: #0066cc;
+            margin: 0 0 1rem 0;
+        }
+
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .reports-table th,
+        .reports-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .reports-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .reports-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .report-actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-draft {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .status-submitted {
+            background: #28a745;
+            color: white;
+        }
+
+        .opfs-notice {
+            background: #e6f3ff;
+            border: 1px solid #b8daff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #004085;
+        }
+
+        .storage-stats {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .login-required {
+            text-align: center;
+            padding: 3rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+
+        .login-required h3 {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .offline-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            z-index: 9999;
+        }
+
+        .offline-indicator.visible {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
+    <header>
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+            <div class="search-container">
+                <form class="search-form" onsubmit="performSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Employee Reports</h2>
+        <p>Generate and manage operational reports</p>
+    </section>
+
+    <div class="reports-container" id="reportsContent" style="display: none;">
+        <div class="opfs-notice">
+            📁 Reports are saved in your browser. Data persists locally and is available offline.
+        </div>
+
+        <div class="reports-grid">
+            <div class="report-sidebar">
+                <h3>Report Types</h3>
+                <ul class="report-type-list" id="reportTypeList">
+                    <li class="active" data-type="daily">📋 Daily Log</li>
+                    <li data-type="incident">🚨 Incident Report</li>
+                    <li data-type="maintenance">🔧 Maintenance</li>
+                    <li data-type="inventory">📦 Inventory</li>
+                    <li data-type="visitor">👥 Visitor Stats</li>
+                </ul>
+
+                <div class="storage-stats" id="storageStats">
+                    Loading storage info...
+                </div>
+            </div>
+
+            <div class="main-panel">
+                <!-- Daily Log Form -->
+                <div id="form-daily" class="report-form active">
+                    <div class="report-header">
+                        <h2>📋 Daily Log Report</h2>
+                        <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="daily-date">Date</label>
+                            <input type="date" id="daily-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="daily-shift">Shift</label>
+                            <select id="daily-shift">
+                                <option value="morning">Morning (6AM-2PM)</option>
+                                <option value="afternoon">Afternoon (2PM-10PM)</option>
+                                <option value="night">Night (10PM-6AM)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="daily-summary">Summary</label>
+                        <textarea id="daily-summary" rows="4" placeholder="Brief summary of the shift..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="daily-notes">Additional Notes</label>
+                        <textarea id="daily-notes" rows="3" placeholder="Any additional observations..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveReport('daily')">💾 Save Report</button>
+                </div>
+
+                <!-- Incident Report Form -->
+                <div id="form-incident" class="report-form" style="display: none;">
+                    <div class="report-header">
+                        <h2>🚨 Incident Report</h2>
+                        <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="incident-date">Date/Time</label>
+                            <input type="datetime-local" id="incident-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="incident-severity">Severity</label>
+                            <select id="incident-severity">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="incident-location">Location</label>
+                        <input type="text" id="incident-location" placeholder="Where did this occur?">
+                    </div>
+                    <div class="form-group">
+                        <label for="incident-description">Description</label>
+                        <textarea id="incident-description" rows="4" placeholder="Detailed description of the incident..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="incident-action">Action Taken</label>
+                        <textarea id="incident-action" rows="3" placeholder="What was done to address this?"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveReport('incident')">💾 Save Report</button>
+                </div>
+
+                <!-- Maintenance Report Form -->
+                <div id="form-maintenance" class="report-form" style="display: none;">
+                    <div class="report-header">
+                        <h2>🔧 Maintenance Report</h2>
+                        <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maint-date">Date</label>
+                            <input type="date" id="maint-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="maint-type">Type</label>
+                            <select id="maint-type">
+                                <option value="preventive">Preventive</option>
+                                <option value="corrective">Corrective</option>
+                                <option value="emergency">Emergency</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="maint-equipment">Equipment/System</label>
+                        <input type="text" id="maint-equipment" placeholder="What was serviced?">
+                    </div>
+                    <div class="form-group">
+                        <label for="maint-work">Work Performed</label>
+                        <textarea id="maint-work" rows="4" placeholder="Details of maintenance work..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveReport('maintenance')">💾 Save Report</button>
+                </div>
+
+                <!-- Inventory Report Form -->
+                <div id="form-inventory" class="report-form" style="display: none;">
+                    <div class="report-header">
+                        <h2>📦 Inventory Report</h2>
+                        <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="inv-date">Date</label>
+                        <input type="date" id="inv-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="inv-category">Category</label>
+                        <select id="inv-category">
+                            <option value="food">Animal Food</option>
+                            <option value="supplies">Supplies</option>
+                            <option value="merchandise">Merchandise</option>
+                            <option value="equipment">Equipment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inv-items">Items Checked</label>
+                        <textarea id="inv-items" rows="4" placeholder="List items and quantities..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="inv-notes">Notes</label>
+                        <textarea id="inv-notes" rows="2" placeholder="Any discrepancies or reorder needs..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveReport('inventory')">💾 Save Report</button>
+                </div>
+
+                <!-- Visitor Stats Form -->
+                <div id="form-visitor" class="report-form" style="display: none;">
+                    <div class="report-header">
+                        <h2>👥 Visitor Statistics</h2>
+                        <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="vis-date">Date</label>
+                        <input type="date" id="vis-date">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vis-adults">Adults</label>
+                            <input type="number" id="vis-adults" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="vis-children">Children</label>
+                            <input type="number" id="vis-children" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="vis-members">Members</label>
+                            <input type="number" id="vis-members" min="0" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="vis-feedback">Visitor Feedback</label>
+                        <textarea id="vis-feedback" rows="3" placeholder="Notable comments or complaints..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveReport('visitor')">💾 Save Report</button>
+                </div>
+
+                <!-- Saved Reports List -->
+                <div class="saved-reports">
+                    <h3>Saved Reports</h3>
+                    <div id="reportsList">
+                        <div class="empty-state">No reports saved yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-required" id="loginRequired">
+        <h3>🔒 Access Restricted</h3>
+        <p>You must be logged in as an employee to access reports.</p>
+        <a href="login.html" class="btn btn-primary">Employee Login</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        let opfsRoot = null;
+        let reportsDir = null;
+        let currentType = 'daily';
+
+        // Check login status
+        function checkLogin() {
+            const isLoggedIn = localStorage.getItem('employeeLoggedIn') === 'true';
+            document.getElementById('reportsContent').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('loginRequired').style.display = isLoggedIn ? 'none' : 'block';
+            return isLoggedIn;
+        }
+
+        // Initialize OPFS
+        async function initOPFS() {
+            try {
+                if ('storage' in navigator && 'getDirectory' in navigator.storage) {
+                    opfsRoot = await navigator.storage.getDirectory();
+                    reportsDir = await opfsRoot.getDirectoryHandle('reports', { create: true });
+                    console.log('OPFS initialized for reports');
+                    await loadReports();
+                    await updateStorageStats();
+                } else {
+                    console.log('OPFS not supported');
+                    document.getElementById('storageStats').textContent = 'OPFS not supported - using localStorage';
+                    loadReportsFromLocalStorage();
+                }
+            } catch (error) {
+                console.error('OPFS error:', error);
+                loadReportsFromLocalStorage();
+            }
+        }
+
+        // Get or create type directory
+        async function getTypeDir(type) {
+            if (reportsDir) {
+                return await reportsDir.getDirectoryHandle(type, { create: true });
+            }
+            return null;
+        }
+
+        // Save report
+        async function saveReport(type) {
+            const report = collectFormData(type);
+            if (!report) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            report.id = Date.now().toString();
+            report.type = type;
+            report.status = 'draft';
+            report.createdAt = new Date().toISOString();
+            report.createdBy = 'admin';
+
+            try {
+                if (reportsDir) {
+                    const typeDir = await getTypeDir(type);
+                    const fileName = `report_${report.id}.json`;
+                    const fileHandle = await typeDir.getFileHandle(fileName, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(JSON.stringify(report, null, 2));
+                    await writable.close();
+                    console.log('Report saved to OPFS:', fileName);
+                } else {
+                    const reports = JSON.parse(localStorage.getItem('aquarium_reports') || '[]');
+                    reports.push(report);
+                    localStorage.setItem('aquarium_reports', JSON.stringify(reports));
+                }
+
+                await loadReports();
+                await updateStorageStats();
+                clearForm();
+                alert('Report saved successfully!');
+            } catch (error) {
+                console.error('Error saving report:', error);
+                alert('Error saving report');
+            }
+        }
+
+        // Collect form data
+        function collectFormData(type) {
+            switch (type) {
+                case 'daily':
+                    return {
+                        date: document.getElementById('daily-date').value,
+                        shift: document.getElementById('daily-shift').value,
+                        summary: document.getElementById('daily-summary').value,
+                        notes: document.getElementById('daily-notes').value
+                    };
+                case 'incident':
+                    return {
+                        datetime: document.getElementById('incident-date').value,
+                        severity: document.getElementById('incident-severity').value,
+                        location: document.getElementById('incident-location').value,
+                        description: document.getElementById('incident-description').value,
+                        action: document.getElementById('incident-action').value
+                    };
+                case 'maintenance':
+                    return {
+                        date: document.getElementById('maint-date').value,
+                        maintenanceType: document.getElementById('maint-type').value,
+                        equipment: document.getElementById('maint-equipment').value,
+                        work: document.getElementById('maint-work').value
+                    };
+                case 'inventory':
+                    return {
+                        date: document.getElementById('inv-date').value,
+                        category: document.getElementById('inv-category').value,
+                        items: document.getElementById('inv-items').value,
+                        notes: document.getElementById('inv-notes').value
+                    };
+                case 'visitor':
+                    return {
+                        date: document.getElementById('vis-date').value,
+                        adults: parseInt(document.getElementById('vis-adults').value) || 0,
+                        children: parseInt(document.getElementById('vis-children').value) || 0,
+                        members: parseInt(document.getElementById('vis-members').value) || 0,
+                        feedback: document.getElementById('vis-feedback').value
+                    };
+            }
+            return null;
+        }
+
+        // Load reports
+        async function loadReports() {
+            const container = document.getElementById('reportsList');
+            let reports = [];
+
+            try {
+                if (reportsDir) {
+                    const typeDir = await getTypeDir(currentType);
+                    for await (const entry of typeDir.values()) {
+                        if (entry.kind === 'file' && entry.name.endsWith('.json')) {
+                            const file = await entry.getFile();
+                            reports.push(JSON.parse(await file.text()));
+                        }
+                    }
+                } else {
+                    const allReports = JSON.parse(localStorage.getItem('aquarium_reports') || '[]');
+                    reports = allReports.filter(r => r.type === currentType);
+                }
+            } catch (error) {
+                console.error('Error loading reports:', error);
+            }
+
+            if (reports.length === 0) {
+                container.innerHTML = '<div class="empty-state">No reports of this type saved yet</div>';
+                return;
+            }
+
+            reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            container.innerHTML = `
+                <table class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Summary</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${reports.map(r => `
+                            <tr>
+                                <td>${r.date || r.datetime || 'N/A'}</td>
+                                <td>${getReportSummary(r)}</td>
+                                <td><span class="status-badge status-${r.status}">${r.status}</span></td>
+                                <td class="report-actions">
+                                    <button class="btn btn-secondary" onclick="viewReport('${r.id}')">View</button>
+                                    <button class="btn btn-danger" onclick="deleteReport('${r.id}')">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function loadReportsFromLocalStorage() {
+            loadReports();
+        }
+
+        function getReportSummary(report) {
+            if (report.summary) return report.summary.substring(0, 50) + '...';
+            if (report.description) return report.description.substring(0, 50) + '...';
+            if (report.work) return report.work.substring(0, 50) + '...';
+            if (report.items) return report.items.substring(0, 50) + '...';
+            if (report.adults !== undefined) return `${report.adults + report.children + report.members} visitors`;
+            return 'No summary';
+        }
+
+        // View report
+        async function viewReport(id) {
+            let report = null;
+            try {
+                if (reportsDir) {
+                    const typeDir = await getTypeDir(currentType);
+                    const fileHandle = await typeDir.getFileHandle(`report_${id}.json`);
+                    const file = await fileHandle.getFile();
+                    report = JSON.parse(await file.text());
+                } else {
+                    const reports = JSON.parse(localStorage.getItem('aquarium_reports') || '[]');
+                    report = reports.find(r => r.id === id);
+                }
+                if (report) {
+                    alert(JSON.stringify(report, null, 2));
+                }
+            } catch (error) {
+                console.error('Error viewing report:', error);
+            }
+        }
+
+        // Delete report
+        async function deleteReport(id) {
+            if (!confirm('Delete this report?')) return;
+
+            try {
+                if (reportsDir) {
+                    const typeDir = await getTypeDir(currentType);
+                    await typeDir.removeEntry(`report_${id}.json`);
+                } else {
+                    let reports = JSON.parse(localStorage.getItem('aquarium_reports') || '[]');
+                    reports = reports.filter(r => r.id !== id);
+                    localStorage.setItem('aquarium_reports', JSON.stringify(reports));
+                }
+                await loadReports();
+                await updateStorageStats();
+            } catch (error) {
+                console.error('Error deleting report:', error);
+            }
+        }
+
+        // Clear form
+        function clearForm() {
+            document.querySelectorAll('.report-form input, .report-form textarea').forEach(el => {
+                if (el.type === 'number') el.value = '0';
+                else if (el.type === 'date') el.valueAsDate = new Date();
+                else el.value = '';
+            });
+        }
+
+        // Update storage stats
+        async function updateStorageStats() {
+            const stats = document.getElementById('storageStats');
+            try {
+                if (reportsDir) {
+                    let totalFiles = 0;
+                    let totalSize = 0;
+                    const types = ['daily', 'incident', 'maintenance', 'inventory', 'visitor'];
+                    for (const type of types) {
+                        try {
+                            const typeDir = await reportsDir.getDirectoryHandle(type);
+                            for await (const entry of typeDir.values()) {
+                                if (entry.kind === 'file') {
+                                    totalFiles++;
+                                    const file = await entry.getFile();
+                                    totalSize += file.size;
+                                }
+                            }
+                        } catch (e) {}
+                    }
+                    stats.innerHTML = `<strong>OPFS Storage</strong><br>${totalFiles} reports (${(totalSize / 1024).toFixed(1)} KB)`;
+                }
+            } catch (error) {
+                stats.textContent = 'Storage info unavailable';
+            }
+        }
+
+        // Switch report type
+        document.getElementById('reportTypeList').addEventListener('click', (e) => {
+            const li = e.target.closest('li');
+            if (li) {
+                document.querySelectorAll('.report-type-list li').forEach(l => l.classList.remove('active'));
+                li.classList.add('active');
+                currentType = li.dataset.type;
+
+                document.querySelectorAll('.report-form').forEach(f => f.style.display = 'none');
+                document.getElementById(`form-${currentType}`).style.display = 'block';
+
+                loadReports();
+            }
+        });
+
+        // Search functionality
+        function performSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        // Offline detection
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (!navigator.onLine) {
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            if (checkLogin()) {
+                initOPFS();
+            }
+            updateOnlineStatus();
+
+            // Set default dates
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.valueAsDate = new Date();
+            });
+        });
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
+</body>
+</html>

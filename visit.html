@@ -326,14 +326,34 @@
         .aquarium-dot {
             background: #28a745;
         }
+
+
+        .offline-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            z-index: 9999;
+        }
+
+        .offline-indicator.visible {
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
     <header>
-        <div class="logo-container">
-            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
             <h1>Aquatic Nature Discovery</h1>
-        </div>
+        </a>
         <nav>
             <a href="index.html">Home</a>
             <a href="exhibits.html">Exhibits</a>
@@ -490,6 +510,20 @@
                 </div>
             </div>
         </section>
+
+        <section id="plan-trip">
+            <div class="section-header">
+                <h2>Plan Your Visit</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="enhanced-card" style="text-align: center;">
+                    <h3><span class="icon">📅</span>Trip Planner</h3>
+                    <p>Create a custom itinerary for your visit. Select activities, set arrival times, and save your plan for later.</p>
+                    <a href="trip-planner.html" class="location-button" style="text-decoration: none; display: inline-block; margin-top: 1rem;">Plan Your Trip</a>
+                </div>
+            </div>
+        </section>
+
     </div>
 
     <footer>
@@ -770,6 +804,32 @@
                 window.location.href = `search.html?q=${encodeURIComponent(query)}`;
             }
         }
+
+        // Offline detection
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (!navigator.onLine) {
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateOnlineStatus();
+
+        });
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
     </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
 </body>
 </html>

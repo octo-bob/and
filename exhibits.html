@@ -4,13 +4,78 @@
     <meta charset="UTF-8">
     <title>Exhibits - Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .tabs-container {
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+            padding: 0 2rem;
+        }
+
+        .exhibit-tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 3px solid #0066cc;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: #e6f3ff;
+            color: #0066cc;
+        }
+
+        .tab-btn.active {
+            background: #0066cc;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .offline-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            z-index: 9999;
+        }
+
+        .offline-indicator.visible {
+            display: block;
+        }
+    </style>
 </head>
 <body>
+    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
     <header>
-        <div class="logo-container">
-            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
             <h1>Aquatic Nature Discovery</h1>
-        </div>
+        </a>
         <nav>
             <a href="index.html">Home</a>
             <a href="exhibits.html">Exhibits</a>
@@ -33,57 +98,90 @@
         <p>Discover the wonders of marine life through our immersive exhibits</p>
     </section>
 
-    <section id="main-exhibits">
-        <h2>Main Exhibits</h2>
-        <div class="exhibit-grid">
-            <div class="exhibit-card">
-                <img src="https://images.unsplash.com/photo-1546026423-cc4642628d2b?w=500" alt="Coral Reef Exhibit">
-                <h3>Coral Reef Ecosystem</h3>
-                <p>Experience the vibrant colors and diverse life of coral reefs. Our 500,000-gallon exhibit features over 100 species of fish and invertebrates.</p>
-                <ul>
-                    <li>Daily feeding shows at 11 AM and 3 PM</li>
-                    <li>Interactive touch pool</li>
-                    <li>Educational talks every hour</li>
-                </ul>
-            </div>
-            <div class="exhibit-card">
-                <img src="images/deep-sea-francesco-ungaro-lWWKcLX-xtc-unsplash.jpg" alt="Deep Sea Exhibit">
-                <h3>Deep Sea Exploration</h3>
-                <p>Journey into the mysterious depths of the ocean. Our deep sea exhibit showcases bioluminescent creatures and deep-sea adaptations.</p>
-                <ul>
-                    <li>Special lighting effects</li>
-                    <li>Rare deep-sea species</li>
-                    <li>Research station viewing</li>
-                </ul>
-            </div>
-            <div class="exhibit-card">
-                <img src="https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=500" alt="Marine Mammals">
-                <h3>Marine Mammal Habitat</h3>
-                <p>Meet our resident seals and sea lions in their naturalistic habitat. Watch them play, swim, and interact with their trainers.</p>
-                <ul>
-                    <li>Training demonstrations</li>
-                    <li>Underwater viewing</li>
-                    <li>Educational programs</li>
-                </ul>
-            </div>
-        </div>
-    </section>
+    <div class="tabs-container">
+        <div class="exhibit-tabs" id="exhibitTabs">
+            <button class="tab-btn active" data-tab="main">Main Exhibits</button>
+            <button class="tab-btn" data-tab="special">Special Exhibits</button>
 
-    <section id="special-exhibits">
-        <h2>Special Exhibits</h2>
-        <div class="exhibit-grid">
-            <div class="exhibit-card">
-                <img src="images/jellyfish-jeffrey-hamilton-JtVyK2Sej2I-unsplash.jpg" alt="Jellyfish Exhibit">
-                <h3>Jellyfish Gallery</h3>
-                <p>Experience the mesmerizing beauty of various jellyfish species in our specially designed gallery.</p>
-            </div>
-            <div class="exhibit-card">
-                <img src="images/shark-david-clode-o3r7oVPZnZI-unsplash.jpg" alt="Shark Tank">
-                <h3>Shark Encounter</h3>
-                <p>Get up close with various shark species in our 750,000-gallon shark tank.</p>
-            </div>
+            <button class="tab-btn" data-tab="partner-resources">Online Partner Resources</button>
         </div>
-    </section>
+
+        <!-- Main Exhibits Tab -->
+        <div class="tab-content active" id="tab-main">
+            <section id="main-exhibits">
+                <h2>Main Exhibits</h2>
+                <div class="exhibit-grid">
+                    <div class="exhibit-card">
+                        <img src="https://images.unsplash.com/photo-1546026423-cc4642628d2b?w=500" alt="Coral Reef Exhibit">
+                        <h3>Coral Reef Ecosystem</h3>
+                        <p>Experience the vibrant colors and diverse life of coral reefs. Our 500,000-gallon exhibit features over 100 species of fish and invertebrates.</p>
+                        <ul>
+                            <li>Daily feeding shows at 11 AM and 3 PM</li>
+                            <li>Interactive touch pool</li>
+                            <li>Educational talks every hour</li>
+                        </ul>
+                    </div>
+                    <div class="exhibit-card">
+                        <img src="images/deep-sea-francesco-ungaro-lWWKcLX-xtc-unsplash.jpg" alt="Deep Sea Exhibit">
+                        <h3>Deep Sea Exploration</h3>
+                        <p>Journey into the mysterious depths of the ocean. Our deep sea exhibit showcases bioluminescent creatures and deep-sea adaptations.</p>
+                        <ul>
+                            <li>Special lighting effects</li>
+                            <li>Rare deep-sea species</li>
+                            <li>Research station viewing</li>
+                        </ul>
+                    </div>
+                    <div class="exhibit-card">
+                        <img src="https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=500" alt="Marine Mammals">
+                        <h3>Marine Mammal Habitat</h3>
+                        <p>Meet our resident seals and sea lions in their naturalistic habitat. Watch them play, swim, and interact with their trainers.</p>
+                        <ul>
+                            <li>Training demonstrations</li>
+                            <li>Underwater viewing</li>
+                            <li>Educational programs</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Special Exhibits Tab -->
+        <div class="tab-content" id="tab-special">
+            <section id="special-exhibits">
+                <h2>Special Exhibits</h2>
+                <div class="exhibit-grid">
+                    <div class="exhibit-card">
+                        <img src="images/jellyfish-jeffrey-hamilton-JtVyK2Sej2I-unsplash.jpg" alt="Jellyfish Exhibit">
+                        <h3>Jellyfish Gallery</h3>
+                        <p>Experience the mesmerizing beauty of various jellyfish species in our specially designed gallery.</p>
+                    </div>
+                    <div class="exhibit-card">
+                        <img src="images/shark-david-clode-o3r7oVPZnZI-unsplash.jpg" alt="Shark Tank">
+                        <h3>Shark Encounter</h3>
+                        <p>Get up close with various shark species in our 750,000-gallon shark tank.</p>
+                    </div>
+                    <div class="exhibit-card">
+                        <img src="https://images.unsplash.com/photo-1745917784526-fbad88531db1?w=500" alt="Kelp Forest">
+                        <h3>Kelp Forest</h3>
+                        <p>Walk through our three-story kelp forest exhibit and see how these underwater forests support marine life.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Online Partner Resources Tab -->
+        <div class="tab-content" id="tab-partner-resources">
+            <section id="partner-resources">
+                <h2>Online Partner Resources</h2>
+                <p>Explore educational content from our partners and collaborators.</p>
+                <div style="text-align: center; margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center;">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/tEtg5Kg3voQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="max-width: 100%;"></iframe>
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/abbR-Ttd-cA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="max-width: 100%;"></iframe>
+                </div>
+            </section>
+        </div>
+
+    </div>
 
     <footer>
         <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
@@ -98,6 +196,82 @@
                 window.location.href = `search.html?q=${encodeURIComponent(query)}`;
             }
         }
+
+        // History API - SPA Tab Navigation
+        const tabs = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function switchTab(tabName, addToHistory = true) {
+            // Update tabs
+            tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+
+            // Update content
+            tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${tabName}`);
+            });
+
+            // Update URL using History API
+            if (addToHistory) {
+                const url = new URL(window.location);
+                url.searchParams.set('tab', tabName);
+                history.pushState({ tab: tabName }, '', url);
+                console.log('History pushState:', tabName);
+            }
+        }
+
+        // Tab click handlers
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                switchTab(tab.dataset.tab);
+            });
+        });
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.tab) {
+                switchTab(event.state.tab, false);
+            } else {
+                // Check URL params
+                const params = new URLSearchParams(window.location.search);
+                const tab = params.get('tab') || 'main';
+                switchTab(tab, false);
+            }
+            console.log('popstate event:', event.state);
+        });
+
+        // Initialize tab from URL on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab') || 'main';
+            switchTab(tab, false);
+
+            // Replace initial state
+            history.replaceState({ tab }, '', window.location.href);
+
+            updateOnlineStatus();
+        });
+
+        // Offline detection
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (!navigator.onLine) {
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
     </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
 </body>
 </html>

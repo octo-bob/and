@@ -241,14 +241,131 @@
                 gap: 0;
             }
         }
+
+        /* Guest book styles */
+        .sqlite-notice {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: #155724;
+        }
+
+        .guestbook-form .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .guestbook-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .guestbook-form input,
+        .guestbook-form textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .guestbook-entries {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .guestbook-entry {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #0066cc;
+        }
+
+        .guestbook-entry .name {
+            font-weight: bold;
+            color: #0066cc;
+        }
+
+        .guestbook-entry .location {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .guestbook-entry .message {
+            margin-top: 0.5rem;
+            color: #333;
+        }
+
+        .guestbook-entry .date {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.5rem;
+        }
+
+        .guestbook-stats {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .db-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .db-status.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .db-status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .db-status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .offline-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            z-index: 9999;
+        }
+
+        .offline-indicator.visible {
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
     <header>
-        <div class="logo-container">
-            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
             <h1>Aquatic Nature Discovery</h1>
-        </div>
+        </a>
         <nav>
             <a href="index.html">Home</a>
             <a href="exhibits.html">Exhibits</a>
@@ -271,59 +388,36 @@
         <p>Help us protect marine life and inspire ocean conservation</p>
     </section>
 
-    <section id="membership">
-        <h2>Become a Member</h2>
+    <section id="guestbook">
+        <h2>Guest Book</h2>
         <div class="exhibit-grid">
             <div class="exhibit-card">
-                <h3>Individual Membership</h3>
-                <ul>
-                    <li>Unlimited admission for one year</li>
-                    <li>10% discount in gift shop</li>
-                    <li>Member-only events</li>
-                    <li>Price: $75/year</li>
-                </ul>
+                <h3>Sign Our Guest Book <span class="db-status loading" id="dbStatus">Loading...</span></h3>
+                <p>Leave a message for future visitors!</p>
+                <form id="guestbookForm" class="guestbook-form">
+                    <div class="form-group">
+                        <label for="gbName">Your Name</label>
+                        <input type="text" id="gbName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gbLocation">Location</label>
+                        <input type="text" id="gbLocation" placeholder="City, Country">
+                    </div>
+                    <div class="form-group">
+                        <label for="gbMessage">Message</label>
+                        <textarea id="gbMessage" rows="3" required placeholder="Share your experience..."></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Sign Guest Book</button>
+                </form>
             </div>
             <div class="exhibit-card">
-                <h3>Family Membership</h3>
-                <ul>
-                    <li>Unlimited admission for 2 adults and up to 4 children</li>
-                    <li>15% discount in gift shop</li>
-                    <li>Member-only events</li>
-                    <li>Price: $150/year</li>
-                </ul>
-            </div>
-            <div class="exhibit-card">
-                <h3>Premium Membership</h3>
-                <ul>
-                    <li>All Family Membership benefits</li>
-                    <li>Behind-the-scenes tours</li>
-                    <li>Priority event registration</li>
-                    <li>Price: $250/year</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <section id="donation">
-        <h2>Make a Donation</h2>
-        <div class="exhibit-grid">
-            <div class="exhibit-card">
-                <h3>One-Time Donation</h3>
-                <p>Your contribution directly supports our conservation and education programs.</p>
-                <ul>
-                    <li>Conservation research</li>
-                    <li>Animal care</li>
-                    <li>Education programs</li>
-                </ul>
-            </div>
-            <div class="exhibit-card">
-                <h3>Monthly Giving</h3>
-                <p>Join our Ocean Guardians monthly giving program.</p>
-                <ul>
-                    <li>Flexible monthly amounts</li>
-                    <li>Easy to manage</li>
-                    <li>Tax-deductible</li>
-                </ul>
+                <h3>Recent Entries</h3>
+                <div id="guestbookEntries" class="guestbook-entries">
+                    <p>Loading entries...</p>
+                </div>
+                <div class="guestbook-stats" id="guestbookStats">
+                    <span>Total entries: <strong id="entryCount">0</strong></span>
+                </div>
             </div>
         </div>
     </section>
@@ -774,6 +868,195 @@
                 window.location.href = `search.html?q=${encodeURIComponent(query)}`;
             }
         }
+
+        // ============================================
+        // SQLite WASM with OPFS Backend for Guest Book
+        // Uses official SQLite WASM from sqlite.org
+        // https://developer.chrome.com/blog/sqlite-wasm-in-the-browser-backed-by-the-origin-private-file-system
+        // ============================================
+        let sqliteWorker = null;
+        let messageId = 0;
+        let pendingMessages = new Map();
+        let dbReady = false;
+
+        // Send message to worker and wait for response
+        function sendToWorker(action, data = {}) {
+            return new Promise((resolve, reject) => {
+                const id = ++messageId;
+                pendingMessages.set(id, { resolve, reject });
+                sqliteWorker.postMessage({ id, action, data });
+            });
+        }
+
+        // Initialize SQLite WASM with OPFS
+        async function initSQLite() {
+            const statusEl = document.getElementById('dbStatus');
+            statusEl.textContent = 'Loading...';
+            statusEl.className = 'db-status loading';
+
+            try {
+                // Create worker for OPFS access (required for sync OPFS API)
+                sqliteWorker = new Worker('scripts/sqlite-worker.js');
+
+                // Handle worker messages
+                sqliteWorker.onmessage = (event) => {
+                    const { id, success, result, error } = event.data;
+                    const pending = pendingMessages.get(id);
+                    if (pending) {
+                        pendingMessages.delete(id);
+                        if (success) {
+                            pending.resolve(result);
+                        } else {
+                            pending.reject(new Error(error));
+                        }
+                    }
+                };
+
+                sqliteWorker.onerror = (error) => {
+                    console.error('Worker error:', error);
+                    statusEl.textContent = 'Worker Error';
+                    statusEl.className = 'db-status error';
+                };
+
+                // Initialize the database
+                const initResult = await sendToWorker('init');
+                console.log('SQLite init result:', initResult);
+
+                if (!initResult.success) {
+                    throw new Error('Failed to initialize SQLite');
+                }
+
+                dbReady = true;
+
+                // Update status based on OPFS availability
+                if (initResult.opfs) {
+                    statusEl.textContent = 'Ready';
+                    statusEl.className = 'db-status ready';
+                } else {
+                    statusEl.textContent = 'Ready (Temporary)';
+                    statusEl.className = 'db-status loading';
+                }
+
+                // Log page view
+                await sendToWorker('logPageView', { userAgent: navigator.userAgent });
+
+                // Load entries
+                await loadGuestbookEntries();
+
+                return true;
+
+            } catch (error) {
+                console.error('SQLite WASM error:', error);
+                statusEl.textContent = 'Error';
+                statusEl.className = 'db-status error';
+                document.getElementById('guestbookEntries').innerHTML =
+                    `<p style="color: #dc3545;">Failed to load guest book: ${error.message}</p>`;
+                return false;
+            }
+        }
+
+        async function loadGuestbookEntries() {
+            if (!dbReady) return;
+
+            try {
+                const entries = await sendToWorker('getEntries', { limit: 10 });
+                const count = await sendToWorker('getCount');
+
+                const container = document.getElementById('guestbookEntries');
+                const countEl = document.getElementById('entryCount');
+
+                countEl.textContent = count;
+
+                if (!entries || entries.length === 0) {
+                    container.innerHTML = '<p>No entries yet. Be the first to sign!</p>';
+                    return;
+                }
+
+                let html = '';
+                entries.forEach(entry => {
+                    const date = entry.created_at ?
+                        new Date(entry.created_at + 'Z').toLocaleDateString() : 'Unknown';
+
+                    html += `
+                        <div class="guestbook-entry">
+                            <div class="name">${escapeHtml(entry.name)}</div>
+                            ${entry.location ? `<div class="location">${escapeHtml(entry.location)}</div>` : ''}
+                            <div class="message">${escapeHtml(entry.message)}</div>
+                            <div class="date">${date}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading entries:', error);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Guest book form handler
+        document.getElementById('guestbookForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!dbReady) {
+                alert('Guest book is not ready. Please wait or refresh the page.');
+                return;
+            }
+
+            const name = document.getElementById('gbName').value.trim();
+            const location = document.getElementById('gbLocation').value.trim();
+            const message = document.getElementById('gbMessage').value.trim();
+
+            try {
+                await sendToWorker('addEntry', {
+                    name,
+                    location,
+                    message,
+                    userAgent: navigator.userAgent
+                });
+
+                document.getElementById('guestbookForm').reset();
+                await loadGuestbookEntries();
+
+                console.log('Entry added successfully');
+
+            } catch (error) {
+                console.error('Error adding entry:', error);
+                alert('Error saving entry. Please try again.');
+            }
+        });
+
+        // Offline detection
+        // ============================================
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (!navigator.onLine) {
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initSQLite();
+            updateOnlineStatus();
+        });
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
     </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
 </body>
 </html>

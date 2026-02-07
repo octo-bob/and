@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Membership - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .membership-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #e0e0e0;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .progress-step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #666;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: #0066cc;
+            color: white;
+        }
+
+        .progress-step.completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .form-section h2 {
+            color: #0066cc;
+            margin: 0 0 1.5rem 0;
+            text-align: left;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .membership-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .membership-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .membership-option:hover {
+            border-color: #0066cc;
+        }
+
+        .membership-option.selected {
+            border-color: #0066cc;
+            background: #e6f3ff;
+        }
+
+        .membership-option h3 {
+            color: #0066cc;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .membership-option .price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #28a745;
+            margin: 0.5rem 0;
+        }
+
+        .membership-option .price span {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .membership-option ul {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0 0 0;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .membership-option li {
+            padding: 0.25rem 0;
+            color: #666;
+        }
+
+        .membership-option li::before {
+            content: '✓ ';
+            color: #28a745;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #0055b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .autofill-notice {
+            background: #e6f3ff;
+            border: 1px solid #b8daff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #004085;
+        }
+
+        .summary-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-section h3 {
+            margin: 0 0 1rem 0;
+            color: #0066cc;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding-top: 1rem;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .success-message h2 {
+            color: #28a745;
+        }
+
+        .success-message p {
+            color: #666;
+            margin: 1rem 0;
+        }
+
+        .checkmark {
+            font-size: 4rem;
+            color: #28a745;
+        }
+
+        .offline-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            z-index: 9999;
+        }
+
+        .offline-indicator.visible {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .membership-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
+    <header>
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <div class="search-container">
+                <form class="search-form" onsubmit="performSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Become a Member</h2>
+        <p>Join our ocean conservation family today</p>
+    </section>
+
+    <div class="membership-container">
+        <div class="progress-bar">
+            <div class="progress-step active" data-step="1">1</div>
+            <div class="progress-step" data-step="2">2</div>
+            <div class="progress-step" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
+            <div class="progress-step" data-step="5">5</div>
+        </div>
+
+        <form id="membershipForm" autocomplete="on">
+            <!-- Step 1: Choose Membership -->
+            <div class="form-section active" data-step="1">
+                <h2>Step 1: Choose Your Membership</h2>
+                <div class="membership-options">
+                    <div class="membership-option" data-tier="individual" onclick="selectMembership('individual', 75)">
+                        <h3>Individual</h3>
+                        <div class="price">$75<span>/year</span></div>
+                        <ul>
+                            <li>Unlimited admission</li>
+                            <li>10% gift shop discount</li>
+                            <li>Member newsletter</li>
+                        </ul>
+                    </div>
+                    <div class="membership-option" data-tier="family" onclick="selectMembership('family', 150)">
+                        <h3>Family</h3>
+                        <div class="price">$150<span>/year</span></div>
+                        <ul>
+                            <li>Admission for 2 adults + 4 kids</li>
+                            <li>15% gift shop discount</li>
+                            <li>Member events</li>
+                        </ul>
+                    </div>
+                    <div class="membership-option" data-tier="premium" onclick="selectMembership('premium', 250)">
+                        <h3>Premium</h3>
+                        <div class="price">$250<span>/year</span></div>
+                        <ul>
+                            <li>All Family benefits</li>
+                            <li>Behind-the-scenes tours</li>
+                            <li>Priority registration</li>
+                        </ul>
+                    </div>
+                </div>
+                <input type="hidden" id="membershipTier" name="membershipTier" required>
+                <input type="hidden" id="membershipPrice" name="membershipPrice" required>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Personal Information -->
+            <div class="form-section" data-step="2">
+                <h2>Step 2: Personal Information</h2>
+                <div class="autofill-notice">
+                    💡 Your browser may offer to autofill this form. This uses the Form Autofill API to save you time!
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="firstName" autocomplete="given-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" autocomplete="family-name" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" autocomplete="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" autocomplete="tel" required>
+                </div>
+                <div class="form-group">
+                    <label for="birthday">Date of Birth</label>
+                    <input type="date" id="birthday" name="birthday" autocomplete="bday">
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Address -->
+            <div class="form-section" data-step="3">
+                <h2>Step 3: Address Information</h2>
+                <div class="form-group">
+                    <label for="street">Street Address</label>
+                    <input type="text" id="street" name="street" autocomplete="street-address" required>
+                </div>
+                <div class="form-group">
+                    <label for="apt">Apartment/Suite (Optional)</label>
+                    <input type="text" id="apt" name="apt" autocomplete="address-line2">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city" autocomplete="address-level2" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input type="text" id="state" name="state" autocomplete="address-level1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="zip">ZIP Code</label>
+                        <input type="text" id="zip" name="zip" autocomplete="postal-code" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <input type="text" id="country" name="country" autocomplete="country-name" value="United States" required>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Payment Information -->
+            <div class="form-section" data-step="4">
+                <h2>Step 4: Payment Information</h2>
+                <div class="autofill-notice">
+                    💳 Your browser can securely autofill your payment details using the Form Autofill API.
+                </div>
+                <div class="form-group">
+                    <label for="cardName">Name on Card</label>
+                    <input type="text" id="cardName" name="cardName" autocomplete="cc-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="cardNumber">Card Number</label>
+                    <input type="text" id="cardNumber" name="cardNumber" autocomplete="cc-number" placeholder="1234 5678 9012 3456" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expiry">Expiration Date</label>
+                        <input type="text" id="expiry" name="expiry" autocomplete="cc-exp" placeholder="MM/YY" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv">Security Code (CVV)</label>
+                        <input type="text" id="cvv" name="cvv" autocomplete="cc-csc" placeholder="123" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="billingZip">Billing ZIP Code</label>
+                    <input type="text" id="billingZip" name="billingZip" autocomplete="billing postal-code" required>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Review Order</button>
+                </div>
+            </div>
+
+            <!-- Step 5: Review & Confirm -->
+            <div class="form-section" data-step="5">
+                <h2>Step 5: Review & Confirm</h2>
+                <div class="summary-section">
+                    <h3>Membership Details</h3>
+                    <div class="summary-row">
+                        <span>Membership Type:</span>
+                        <span id="summaryTier">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Member Name:</span>
+                        <span id="summaryName">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Email:</span>
+                        <span id="summaryEmail">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total:</span>
+                        <span id="summaryTotal">-</span>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button>
+                    <button type="submit" class="btn btn-primary">Complete Registration</button>
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div class="form-section" data-step="6">
+                <div class="success-message">
+                    <div class="checkmark">✓</div>
+                    <h2>Welcome to the Family!</h2>
+                    <p>Your membership registration is complete.</p>
+                    <p>A confirmation email has been sent to <strong id="confirmEmail"></strong></p>
+                    <p>Your member card will arrive in 5-7 business days.</p>
+                    <div class="btn-group" style="justify-content: center;">
+                        <a href="index.html" class="btn btn-primary">Return Home</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        let currentStep = 1;
+        let selectedTier = null;
+        let selectedPrice = 0;
+
+        function selectMembership(tier, price) {
+            selectedTier = tier;
+            selectedPrice = price;
+
+            document.querySelectorAll('.membership-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector(`[data-tier="${tier}"]`).classList.add('selected');
+
+            document.getElementById('membershipTier').value = tier;
+            document.getElementById('membershipPrice').value = price;
+        }
+
+        function updateProgress() {
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                const stepNum = index + 1;
+                step.classList.remove('active', 'completed');
+                if (stepNum < currentStep) {
+                    step.classList.add('completed');
+                } else if (stepNum === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelector(`.form-section[data-step="${step}"]`).classList.add('active');
+            currentStep = step;
+            updateProgress();
+        }
+
+        function nextStep() {
+            // Validate current step
+            if (currentStep === 1 && !selectedTier) {
+                alert('Please select a membership tier');
+                return;
+            }
+
+            if (currentStep >= 2 && currentStep <= 4) {
+                const currentSection = document.querySelector(`[data-step="${currentStep}"]`);
+                const inputs = currentSection.querySelectorAll('input[required]');
+                let valid = true;
+                inputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        input.style.borderColor = '#dc3545';
+                        valid = false;
+                    } else {
+                        input.style.borderColor = '#e0e0e0';
+                    }
+                });
+                if (!valid) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+            }
+
+            if (currentStep === 4) {
+                updateSummary();
+            }
+
+            showStep(currentStep + 1);
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        function updateSummary() {
+            const tierNames = {
+                'individual': 'Individual Membership',
+                'family': 'Family Membership',
+                'premium': 'Premium Membership'
+            };
+
+            document.getElementById('summaryTier').textContent = tierNames[selectedTier] || '-';
+            document.getElementById('summaryName').textContent =
+                `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
+            document.getElementById('summaryEmail').textContent = document.getElementById('email').value;
+            document.getElementById('summaryTotal').textContent = `$${selectedPrice.toFixed(2)}/year`;
+        }
+
+        document.getElementById('membershipForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Collect all form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            // Store in localStorage for demo
+            localStorage.setItem('membershipApplication', JSON.stringify({
+                ...data,
+                submittedAt: new Date().toISOString()
+            }));
+
+            // Show success
+            document.getElementById('confirmEmail').textContent = data.email;
+            showStep(6);
+
+            console.log('Membership application submitted:', data);
+        });
+
+        // Search functionality
+        function performSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        // Offline detection
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (!navigator.onLine) {
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
+</body>
+</html>

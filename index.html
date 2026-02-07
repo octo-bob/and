@@ -4,13 +4,51 @@
     <meta charset="UTF-8">
     <title>Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .offline-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            z-index: 9999;
+        }
+        .offline-indicator.visible {
+            display: block;
+        }
+        .quick-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+        .quick-link {
+            background: #0066cc;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .quick-link:hover {
+            background: #0055b3;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
+    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
     <header>
-        <div class="logo-container">
-            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
             <h1>Aquatic Nature Discovery</h1>
-        </div>
+        </a>
         <nav>
             <a href="index.html">Home</a>
             <a href="exhibits.html">Exhibits</a>
@@ -59,6 +97,16 @@
         </div>
     </section>
 
+    <section id="quick-links">
+        <h2>Explore More</h2>
+        <div class="quick-links">
+            <a href="giftshop.html" class="quick-link">Gift Shop</a>
+            <a href="membership.html" class="quick-link">Become a Member</a>
+            <a href="trip-planner.html" class="quick-link">Plan Your Trip</a>
+
+        </div>
+    </section>
+
     <div style="text-align: center; margin: 3rem 0 5rem 0; padding: 1rem; border-top: 1px solid #ddd; background-color: #f9f9f9;">
         <a href="login.html" style="color: #666; text-decoration: none; font-size: 0.9rem; font-weight: 500;">Employee Login</a>
     </div>
@@ -76,6 +124,54 @@
                 window.location.href = `search.html?q=${encodeURIComponent(query)}`;
             }
         }
+
+        // Cookie utility functions
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(nameEQ) === 0) {
+                    return decodeURIComponent(c.substring(nameEQ.length));
+                }
+            }
+            return null;
+        }
+
+        // Track visit count and last visit
+        let visitCount = parseInt(getCookie('visitCount') || '0') + 1;
+        setCookie('visitCount', visitCount.toString(), 365);
+        setCookie('lastVisit', new Date().toISOString(), 365);
+        console.log(`Welcome! This is visit #${visitCount}`);
+
+        // Offline detection
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (!navigator.onLine) {
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').catch(function() {});
+            });
+        }
     </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
 </body>
 </html>

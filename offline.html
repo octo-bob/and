@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Offline - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .offline-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .offline-icon {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .offline-container h1 {
+            color: #0066cc;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .offline-container p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .retry-btn {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .retry-btn:hover {
+            background: #0055b3;
+            transform: translateY(-2px);
+        }
+
+        .cached-pages {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: left;
+        }
+
+        .cached-pages h3 {
+            color: #0066cc;
+            margin: 0 0 1rem 0;
+        }
+
+        .cached-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .cached-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .cached-list li:last-child {
+            border-bottom: none;
+        }
+
+        .cached-list a {
+            color: #0066cc;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cached-list a:hover {
+            text-decoration: underline;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #dc3545;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .tips {
+            background: #e6f3ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .tips h4 {
+            color: #0066cc;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .tips ul {
+            margin: 0;
+            padding-left: 1.25rem;
+            color: #004085;
+        }
+
+        .tips li {
+            padding: 0.25rem 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </a>
+    </header>
+
+    <div class="offline-container">
+        <div class="offline-icon">🌊</div>
+
+        <div class="status-indicator">
+            <span class="status-dot"></span>
+            You are currently offline
+        </div>
+
+        <h1>Looks like you're adrift!</h1>
+        <p>
+            Don't worry - some pages are available offline thanks to our Service Worker.
+            Try one of the cached pages below, or click the button when you're back online.
+        </p>
+
+        <button class="retry-btn" onclick="retryConnection()">
+            🔄 Try Again
+        </button>
+
+        <div class="cached-pages">
+            <h3>Available Offline</h3>
+            <ul class="cached-list" id="cachedList">
+                <li><a href="index.html">🏠 Home</a></li>
+                <li><a href="exhibits.html">🐠 Exhibits</a></li>
+                <li><a href="visit.html">📍 Visit</a></li>
+                <li><a href="support.html">💙 Support Us</a></li>
+                <li><a href="giftshop.html">🛍️ Gift Shop</a></li>
+                <li><a href="trip-planner.html">📅 Trip Planner</a></li>
+            </ul>
+        </div>
+
+        <div class="tips">
+            <h4>💡 While you're offline:</h4>
+            <ul>
+                <li>Your saved trips in Trip Planner are still accessible</li>
+                <li>Downloaded brochures are available in Exhibits</li>
+                <li>Your shopping cart is saved in cookies</li>
+                <li>Check your network connection settings</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        function retryConnection() {
+            if (navigator.onLine) {
+                window.location.reload();
+            } else {
+                alert('Still offline. Please check your internet connection.');
+            }
+        }
+
+        // Check if we come back online
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+
+        // Try to load cached pages dynamically
+        async function loadCachedPages() {
+            if ('caches' in window) {
+                try {
+                    const cacheNames = await caches.keys();
+                    const list = document.getElementById('cachedList');
+                    const cachedUrls = new Set();
+
+                    for (const name of cacheNames) {
+                        const cache = await caches.open(name);
+                        const keys = await cache.keys();
+                        keys.forEach(req => {
+                            const url = new URL(req.url);
+                            if (url.pathname.endsWith('.html')) {
+                                cachedUrls.add(url.pathname);
+                            }
+                        });
+                    }
+
+                    console.log('Cached pages:', Array.from(cachedUrls));
+                } catch (error) {
+                    console.error('Error loading cache info:', error);
+                }
+            }
+        }
+
+        loadCachedPages();
+    </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
+</body>
+</html>

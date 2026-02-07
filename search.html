@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Results - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .search-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .search-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        .search-form {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .search-input {
+            width: 60%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+            margin-right: 1rem;
+        }
+
+        .search-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .search-button:hover {
+            background-color: #0055b3;
+        }
+
+        .search-results {
+            margin-top: 2rem;
+        }
+
+        .result-item {
+            background: white;
+            border: 1px solid #e6e6e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .result-title {
+            color: #0066cc;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            text-decoration: none;
+        }
+
+        .result-title:hover {
+            text-decoration: underline;
+        }
+
+        .result-url {
+            color: #28a745;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-snippet {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .result-category {
+            display: inline-block;
+            background-color: #e6f3ff;
+            color: #0066cc;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .no-results h3 {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .search-filters {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .filter-group {
+            display: inline-block;
+            margin-right: 1rem;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .filter-group select {
+            padding: 0.25rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .search-stats {
+            color: #666;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 0.1rem 0.2rem;
+            border-radius: 2px;
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-form {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Search Results</h2>
+        <p>Find what you're looking for across our website</p>
+    </section>
+
+    <div class="search-container">
+        <div class="search-form">
+            <form id="searchForm" onsubmit="performSearch(event)">
+                <input type="text" id="searchQuery" class="search-input" placeholder="Search for exhibits, events, conservation programs..." value="">
+                <button type="submit" class="search-button">🔍 Search</button>
+            </form>
+            <div id="searchSuggestions" class="search-suggestions"></div>
+        </div>
+
+        <div class="search-filters">
+            <div class="filter-group">
+                <label for="categoryFilter">Category:</label>
+                <select id="categoryFilter" onchange="filterResults()">
+                    <option value="">All Categories</option>
+                    <option value="exhibits">Exhibits</option>
+                    <option value="events">Events</option>
+                    <option value="conservation">Conservation</option>
+                    <option value="education">Education</option>
+                    <option value="visit">Visit Information</option>
+                    <option value="support">Support</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy" onchange="sortResults()">
+                    <option value="relevance">Relevance</option>
+                    <option value="date">Date</option>
+                    <option value="title">Title</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="search-stats" id="searchStats">
+            <!-- Search statistics will be displayed here -->
+        </div>
+
+        <div class="search-results" id="searchResults">
+            <!-- Search results will be displayed here -->
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        // Website content database for search
+        const websiteContent = [
+            {
+                title: "Coral Reef Exhibit",
+                url: "exhibits.html#coral-reef",
+                category: "exhibits",
+                snippet: "Discover the vibrant world of coral reefs and their diverse inhabitants. Our coral reef exhibit showcases the beauty and importance of these underwater ecosystems.",
+                keywords: ["coral", "reef", "fish", "underwater", "ecosystem", "marine life", "500,000-gallon", "100 species"],
+                date: "2024-01-15"
+            },
+            {
+                title: "Deep Sea Exhibit",
+                url: "exhibits.html#deep-sea",
+                category: "exhibits",
+                snippet: "Explore the mysterious creatures of the deep ocean. From bioluminescent organisms to giant squid, discover life in the darkest depths.",
+                keywords: ["deep sea", "ocean", "bioluminescent", "squid", "mysterious", "depths"],
+                date: "2024-01-15"
+            },
+            {
+                title: "Marine Mammal Habitat",
+                url: "exhibits.html#marine-mammals",
+                category: "exhibits",
+                snippet: "Meet our resident seals and sea lions in their naturalistic habitat. Watch them play, swim, and interact with their trainers.",
+                keywords: ["seals", "sea lions", "mammals", "playful", "behavior", "conservation", "training demonstrations"],
+                date: "2024-01-15"
+            },
+            {
+                title: "Jellyfish Gallery",
+                url: "exhibits.html#jellyfish",
+                category: "exhibits",
+                snippet: "Experience the mesmerizing beauty of various jellyfish species in our specially designed gallery.",
+                keywords: ["jellyfish", "gallery", "mesmerizing", "species"],
+                date: "2024-01-15"
+            },
+            {
+                title: "Shark Encounter",
+                url: "exhibits.html#shark",
+                category: "exhibits",
+                snippet: "Get up close with various shark species in our 750,000-gallon shark tank.",
+                keywords: ["shark", "encounter", "750,000-gallon", "tank", "species"],
+                date: "2024-01-15"
+            },
+            {
+                title: "Ocean Conservation Programs",
+                url: "conservation.html",
+                category: "conservation",
+                snippet: "Join our efforts to protect marine life and ocean ecosystems. Learn about our conservation programs and how you can help.",
+                keywords: ["conservation", "marine life", "ocean", "protection", "ecosystems", "programs"],
+                date: "2024-01-10"
+            },
+            {
+                title: "Educational Programs",
+                url: "education.html",
+                category: "education",
+                snippet: "Discover our educational programs for students of all ages. From school field trips to adult learning programs.",
+                keywords: ["education", "learning", "students", "field trips", "programs", "school"],
+                date: "2024-01-12"
+            },
+            {
+                title: "Upcoming Events",
+                url: "events.html",
+                category: "events",
+                snippet: "Check out our calendar of events including special exhibits, workshops, and family activities throughout the year.",
+                keywords: ["events", "calendar", "workshops", "activities", "family", "special"],
+                date: "2024-01-08"
+            },
+            {
+                title: "Plan Your Visit",
+                url: "visit.html",
+                category: "visit",
+                snippet: "Plan your perfect visit to Aquatic Nature Discovery. Find information about hours, tickets, directions, and accessibility.",
+                keywords: ["visit", "hours", "tickets", "directions", "accessibility", "plan"],
+                date: "2024-01-05"
+            },
+            {
+                title: "Hours & Location",
+                url: "visit.html#hours-location",
+                category: "visit",
+                snippet: "Monday - Friday: 9:00 AM - 6:00 PM, Saturday - Sunday: 8:00 AM - 7:00 PM. Located at 95 Main Street, Half Moon Bay, CA.",
+                keywords: ["hours", "location", "95 Main Street", "Half Moon Bay", "CA", "Monday", "Friday", "Saturday", "Sunday", "9:00 AM", "6:00 PM", "8:00 AM", "7:00 PM"],
+                date: "2024-01-05"
+            },
+            {
+                title: "Parking Information",
+                url: "visit.html#directions",
+                category: "visit",
+                snippet: "Free parking for all visitors, handicap accessible spaces, RV and bus parking available, security cameras in parking area.",
+                keywords: ["parking", "free", "handicap", "accessible", "RV", "bus", "security", "cameras"],
+                date: "2024-01-05"
+            },
+            {
+                title: "Support Our Mission",
+                url: "support.html",
+                category: "support",
+                snippet: "Support our mission to protect marine life through donations, memberships, and volunteer opportunities.",
+                keywords: ["support", "donations", "memberships", "volunteer", "mission", "protect"],
+                date: "2024-01-03"
+            },
+            {
+                title: "Employee Portal",
+                url: "portal.html",
+                category: "support",
+                snippet: "Access employee resources, schedules, and internal communications through our secure portal.",
+                keywords: ["employee", "portal", "resources", "schedules", "internal", "secure"],
+                date: "2024-01-01"
+            },
+            {
+                title: "Equipment Inventory",
+                url: "inventory.html",
+                category: "support",
+                snippet: "Track aquarium equipment, maintenance schedules, and replacement parts for facility management.",
+                keywords: ["equipment", "inventory", "maintenance", "facility", "management", "parts"],
+                date: "2024-01-20"
+            },
+            {
+                title: "Tank Management",
+                url: "tank-management.html",
+                category: "support",
+                snippet: "Monitor and manage aquarium tank conditions, water quality, and animal health tracking systems.",
+                keywords: ["tank", "management", "water quality", "animal health", "monitoring", "aquarium"],
+                date: "2024-01-18"
+            },
+            {
+                title: "Staff Directory",
+                url: "staff.html",
+                category: "support",
+                snippet: "Meet our dedicated team of marine biologists, educators, and aquarium professionals.",
+                keywords: ["staff", "team", "marine biologists", "educators", "professionals", "directory"],
+                date: "2024-01-16"
+            },
+            {
+                title: "Main Filtration Pump",
+                url: "inventory.html#filtration",
+                category: "support",
+                snippet: "AquaTech Pro-5000 model, Serial Number AT-2024-001, located in Filtration Room A. Installation Date: Jan 15, 2024.",
+                keywords: ["filtration", "pump", "AquaTech Pro-5000", "AT-2024-001", "Filtration Room A", "Jan 15", "2024"],
+                date: "2024-01-15"
+            },
+            {
+                title: "LED Lighting System",
+                url: "inventory.html#lighting",
+                category: "support",
+                snippet: "MarineLED XR30 model, Serial Number ML-2023-045, located in Coral Reef Tank. Installation Date: Mar 20, 2023.",
+                keywords: ["lighting", "LED", "MarineLED XR30", "ML-2023-045", "Coral Reef Tank", "Mar 20", "2023"],
+                date: "2024-01-15"
+            },
+            {
+                title: "Temperature Sensor",
+                url: "inventory.html#sensor",
+                category: "support",
+                snippet: "TempSense Pro model, Serial Number TS-2024-012, located in Deep Sea Exhibit. Installation Date: Feb 10, 2024.",
+                keywords: ["temperature", "sensor", "TempSense Pro", "TS-2024-012", "Deep Sea Exhibit", "Feb 10", "2024"],
+                date: "2024-01-15"
+            },
+            {
+                title: "Water Circulation Pump",
+                url: "inventory.html#circulation",
+                category: "support",
+                snippet: "Circulator Max-2000 model, Serial Number CM-2023-078, located in Marine Mammals Tank. Installation Date: Jun 5, 2023.",
+                keywords: ["circulation", "pump", "Circulator Max-2000", "CM-2023-078", "Marine Mammals Tank", "Jun 5", "2023"],
+                date: "2024-01-15"
+            },
+            {
+                title: "Electrical Panel",
+                url: "inventory.html#electrical",
+                category: "support",
+                snippet: "PowerGrid Elite model, Serial Number PG-2022-003, located in Electrical Room. Installation Date: Sep 15, 2022.",
+                keywords: ["electrical", "panel", "PowerGrid Elite", "PG-2022-003", "Electrical Room", "Sep 15", "2022"],
+                date: "2024-01-15"
+            },
+            {
+                title: "pH Monitoring System",
+                url: "inventory.html#ph",
+                category: "support",
+                snippet: "pHMaster 360 model, Serial Number PH-2024-008, located in All Tanks. Installation Date: Jan 30, 2024.",
+                keywords: ["pH", "monitoring", "pHMaster 360", "PH-2024-008", "All Tanks", "Jan 30", "2024"],
+                date: "2024-01-15"
+            }
+        ];
+
+        let currentResults = [];
+        let currentQuery = "";
+
+        // Get search query from URL parameters
+        function getSearchQueryFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('q') || '';
+        }
+
+        // Perform search
+        function performSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchQuery').value.trim();
+            if (query) {
+                // Update URL with search query
+                const newURL = `search.html?q=${encodeURIComponent(query)}`;
+                window.history.pushState({}, '', newURL);
+                
+                searchContent(query);
+            }
+        }
+
+        // Track search query in sessionStorage
+        function trackSearchQuery(query, resultCount) {
+            var history = [];
+            var saved = sessionStorage.getItem('searchQueryHistory');
+            if (saved) {
+                try { history = JSON.parse(saved); } catch (e) { history = []; }
+            }
+            history.push({
+                query: query,
+                timestamp: new Date().toISOString(),
+                resultCount: resultCount
+            });
+            sessionStorage.setItem('searchQueryHistory', JSON.stringify(history));
+        }
+
+        // Search through content
+        function searchContent(query) {
+            currentQuery = query.toLowerCase();
+            const searchTerms = currentQuery.split(' ').filter(term => term.length > 0);
+            
+            // Score each content item
+            const scoredResults = websiteContent.map(item => {
+                let score = 0;
+                const titleLower = item.title.toLowerCase();
+                const snippetLower = item.snippet.toLowerCase();
+                const keywordsLower = item.keywords.join(' ').toLowerCase();
+                
+                // Title matches get highest score
+                searchTerms.forEach(term => {
+                    if (titleLower.includes(term)) score += 10;
+                    if (snippetLower.includes(term)) score += 5;
+                    if (keywordsLower.includes(term)) score += 3;
+                });
+                
+                return { ...item, score };
+            });
+            
+            // Filter out zero scores and sort by relevance
+            currentResults = scoredResults
+                .filter(item => item.score > 0)
+                .sort((a, b) => b.score - a.score);
+
+            trackSearchQuery(query, currentResults.length);
+            displayResults();
+        }
+
+        // Display search results
+        function displayResults() {
+            const resultsContainer = document.getElementById('searchResults');
+            const statsContainer = document.getElementById('searchStats');
+            
+            if (currentResults.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <h3>No results found for "${currentQuery}"</h3>
+                        <p>Try different keywords or check your spelling.</p>
+                        <p>You can also browse our main sections:</p>
+                        <ul style="text-align: left; display: inline-block;">
+                            <li><a href="exhibits.html">Exhibits</a></li>
+                            <li><a href="events.html">Events</a></li>
+                            <li><a href="conservation.html">Conservation</a></li>
+                            <li><a href="education.html">Education</a></li>
+                        </ul>
+                    </div>
+                `;
+                statsContainer.innerHTML = '';
+            } else {
+                statsContainer.innerHTML = `Found ${currentResults.length} result${currentResults.length === 1 ? '' : 's'} for "${currentQuery}"`;
+                
+                let resultsHTML = '';
+                currentResults.forEach(item => {
+                    const highlightedTitle = highlightText(item.title, currentQuery);
+                    const highlightedSnippet = highlightText(item.snippet, currentQuery);
+                    
+                    resultsHTML += `
+                        <div class="result-item">
+                            <a href="${item.url}" class="result-title">${highlightedTitle}</a>
+                            <div class="result-url">${item.url}</div>
+                            <div class="result-snippet">${highlightedSnippet}</div>
+                            <span class="result-category">${getCategoryDisplayName(item.category)}</span>
+                        </div>
+                    `;
+                });
+                
+                resultsContainer.innerHTML = resultsHTML;
+            }
+        }
+
+        // Highlight search terms in text
+        function highlightText(text, query) {
+            if (!query) return text;
+            
+            const searchTerms = query.split(' ').filter(term => term.length > 0);
+            let highlightedText = text;
+            
+            searchTerms.forEach(term => {
+                const regex = new RegExp(`(${term})`, 'gi');
+                highlightedText = highlightedText.replace(regex, '<span class="highlight">$1</span>');
+            });
+            
+            return highlightedText;
+        }
+
+        // Get display name for category
+        function getCategoryDisplayName(category) {
+            const categoryNames = {
+                'exhibits': 'Exhibits',
+                'events': 'Events',
+                'conservation': 'Conservation',
+                'education': 'Education',
+                'visit': 'Visit Information',
+                'support': 'Support'
+            };
+            return categoryNames[category] || category;
+        }
+
+        // Filter results by category
+        function filterResults() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            if (!categoryFilter) {
+                displayResults();
+                return;
+            }
+            
+            const filteredResults = currentResults.filter(item => item.category === categoryFilter);
+            displayFilteredResults(filteredResults, `Filtered by: ${getCategoryDisplayName(categoryFilter)}`);
+        }
+
+        // Sort results
+        function sortResults() {
+            const sortBy = document.getElementById('sortBy').value;
+            let sortedResults = [...currentResults];
+            
+            switch (sortBy) {
+                case 'date':
+                    sortedResults.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'title':
+                    sortedResults.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+                default: // relevance
+                    // Already sorted by score
+                    break;
+            }
+            
+            displayFilteredResults(sortedResults, `Sorted by: ${sortBy}`);
+        }
+
+        // Display filtered/sorted results
+        function displayFilteredResults(results, message) {
+            const resultsContainer = document.getElementById('searchResults');
+            const statsContainer = document.getElementById('searchStats');
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <h3>No results found with current filters</h3>
+                        <p>Try adjusting your search criteria.</p>
+                    </div>
+                `;
+                statsContainer.innerHTML = message;
+            } else {
+                statsContainer.innerHTML = `${message} - Found ${results.length} result${results.length === 1 ? '' : 's'}`;
+                
+                let resultsHTML = '';
+                results.forEach(item => {
+                    const highlightedTitle = highlightText(item.title, currentQuery);
+                    const highlightedSnippet = highlightText(item.snippet, currentQuery);
+                    
+                    resultsHTML += `
+                        <div class="result-item">
+                            <a href="${item.url}" class="result-title">${highlightedTitle}</a>
+                            <div class="result-url">${item.url}</div>
+                            <div class="result-snippet">${highlightedSnippet}</div>
+                            <span class="result-category">${getCategoryDisplayName(item.category)}</span>
+                        </div>
+                    `;
+                });
+                
+                resultsContainer.innerHTML = resultsHTML;
+            }
+        }
+
+        // Search suggestions functionality
+        function showSearchSuggestions(query) {
+            const suggestionsContainer = document.getElementById('searchSuggestions');
+            if (!query || query.length < 2) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+
+            const suggestions = getSuggestions(query);
+            if (suggestions.length === 0) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+
+            let suggestionsHTML = '';
+            suggestions.forEach(suggestion => {
+                suggestionsHTML += `<div class="suggestion-item" onclick="selectSuggestion('${suggestion}')">${suggestion}</div>`;
+            });
+
+            suggestionsContainer.innerHTML = suggestionsHTML;
+            suggestionsContainer.style.display = 'block';
+        }
+
+        function getSuggestions(query) {
+            const allTerms = [];
+            websiteContent.forEach(item => {
+                allTerms.push(...item.keywords);
+                allTerms.push(item.title.toLowerCase());
+            });
+
+            const uniqueTerms = [...new Set(allTerms)];
+            const filteredTerms = uniqueTerms.filter(term => 
+                term.toLowerCase().includes(query.toLowerCase()) && 
+                term.toLowerCase() !== query.toLowerCase()
+            );
+
+            return filteredTerms.slice(0, 5); // Return top 5 suggestions
+        }
+
+        function selectSuggestion(suggestion) {
+            document.getElementById('searchQuery').value = suggestion;
+            document.getElementById('searchSuggestions').style.display = 'none';
+            searchContent(suggestion);
+        }
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(event) {
+            const suggestionsContainer = document.getElementById('searchSuggestions');
+            const searchForm = document.getElementById('searchForm');
+            
+            if (!searchForm.contains(event.target)) {
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            const query = getSearchQueryFromURL();
+            if (query) {
+                document.getElementById('searchQuery').value = query;
+                searchContent(query);
+            }
+
+            // Add input event listener for suggestions
+            document.getElementById('searchQuery').addEventListener('input', function() {
+                showSearchSuggestions(this.value);
+            });
+        });
+    </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
+</body>
+</html>

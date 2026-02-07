@@ -118,14 +118,43 @@
             font-size: 0.9rem;
             color: #666;
         }
+
+        .remember-me {
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .remember-me label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            cursor: pointer;
+        }
+
+        .credential-info {
+            background-color: #e6f3ff;
+            border: 1px solid #b8daff;
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #004085;
+        }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo-container">
-            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
             <h1>Aquatic Nature Discovery</h1>
-        </div>
+        </a>
         <nav>
             <a href="index.html">Home</a>
             <a href="exhibits.html">Exhibits</a>
@@ -161,6 +190,13 @@
                 <input type="password" id="password" name="password" required>
             </div>
 
+            <div class="form-group remember-me">
+                <label>
+                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                    Remember Me
+                </label>
+            </div>
+
             <button type="submit" class="login-button" id="loginButton">
                 Login
             </button>
@@ -187,15 +223,79 @@
         // Known hashed password (this would normally be stored securely on a server)
         // This is the SHA-256 hash of "aquarium2025"
         const KNOWN_PASSWORD_HASH = "65457dba64001716cd0aaa2791e8fe1253ce80166f228e64fd23dff5ad85bfc6";
-        
+
         // Valid username
         const VALID_USERNAME = "admin";
 
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // Broadcast Channel for multi-tab sync
+        const authChannel = new BroadcastChannel('aquarium_auth');
+
+        // Cookie utility functions
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(nameEQ) === 0) {
+                    return decodeURIComponent(c.substring(nameEQ.length));
+                }
+            }
+            return null;
+        }
+
+        function deleteCookie(name) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        }
+
+        // Credential Management API
+        async function saveCredentials(username, password) {
+            if ('credentials' in navigator && 'PasswordCredential' in window) {
+                try {
+                    const credential = new PasswordCredential({
+                        id: username,
+                        password: password,
+                        name: 'Aquarium Employee'
+                    });
+                    await navigator.credentials.store(credential);
+                    console.log('Credentials saved via Credential Management API');
+                } catch (error) {
+                    console.log('Credential storage not available:', error);
+                }
+            }
+        }
+
+        async function getStoredCredentials() {
+            if ('credentials' in navigator && 'PasswordCredential' in window) {
+                try {
+                    const credential = await navigator.credentials.get({
+                        password: true,
+                        mediation: 'optional'
+                    });
+                    if (credential) {
+                        return {
+                            username: credential.id,
+                            password: credential.password
+                        };
+                    }
+                } catch (error) {
+                    console.log('Could not retrieve credentials:', error);
+                }
+            }
+            return null;
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
             const loginButton = document.getElementById('loginButton');
             const errorMessage = document.getElementById('errorMessage');
             const successMessage = document.getElementById('successMessage');
@@ -214,10 +314,10 @@
             loginButton.textContent = 'Logging in...';
 
             // Simulate network delay
-            setTimeout(() => {
+            setTimeout(async () => {
                 // Hash the entered password using SHA-256
                 const hashedPassword = CryptoJS.SHA256(password).toString();
-                
+
                 // Debug logging
                 console.log('Hashed password:', hashedPassword);
                 console.log('Expected hash:', KNOWN_PASSWORD_HASH);
@@ -235,7 +335,28 @@
                     // Set session flag for other pages to detect
                     localStorage.setItem('employeeLoggedIn', 'true');
 
-                    // Redirect to tank management page after a short delay
+                    // Set cookies for authentication tracking
+                    const sessionToken = 'sess_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+                    setCookie('sessionToken', sessionToken, 1);
+                    setCookie('lastLoginTime', new Date().toISOString(), 30);
+
+                    // Remember Me functionality
+                    if (rememberMe) {
+                        setCookie('rememberedUser', username, 30);
+                        // Save credentials using Credential Management API
+                        await saveCredentials(username, password);
+                    } else {
+                        deleteCookie('rememberedUser');
+                    }
+
+                    // Broadcast login event to other tabs
+                    authChannel.postMessage({
+                        type: 'login',
+                        username: username,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // Redirect to portal page after a short delay
                     setTimeout(() => {
                         window.location.href = 'portal.html';
                     }, 1500);
@@ -255,8 +376,17 @@
             }, 1000);
         });
 
+        // Listen for auth events from other tabs
+        authChannel.onmessage = (event) => {
+            if (event.data.type === 'logout') {
+                console.log('Logout detected from another tab');
+                localStorage.removeItem('employeeLoggedIn');
+                deleteCookie('sessionToken');
+            }
+        };
+
         // Add some basic security features
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // Prevent right-click context menu
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
@@ -269,8 +399,28 @@
                 }
             });
 
-            // Focus on username field when page loads
-            document.getElementById('username').focus();
+            // Check for remembered user cookie
+            const rememberedUser = getCookie('rememberedUser');
+            if (rememberedUser) {
+                document.getElementById('username').value = rememberedUser;
+                document.getElementById('rememberMe').checked = true;
+                document.getElementById('password').focus();
+            } else {
+                // Try to get credentials from Credential Management API
+                const storedCreds = await getStoredCredentials();
+                if (storedCreds) {
+                    document.getElementById('username').value = storedCreds.username;
+                    document.getElementById('password').value = storedCreds.password;
+                    // Show a notice
+                    const form = document.getElementById('loginForm');
+                    const credInfo = document.createElement('div');
+                    credInfo.className = 'credential-info';
+                    credInfo.textContent = 'Credentials auto-filled from browser storage';
+                    form.insertBefore(credInfo, form.firstChild);
+                } else {
+                    document.getElementById('username').focus();
+                }
+            }
         });
     </script>
 
@@ -284,5 +434,7 @@
             }
         }
     </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
 </body>
-</html> 
+</html>

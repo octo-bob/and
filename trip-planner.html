@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trip Planner - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .planner-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .planner-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        .main-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-card h3 {
+            color: #0066cc;
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .activity-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .activity-item {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .activity-item:hover {
+            border-color: #0066cc;
+        }
+
+        .activity-item.selected {
+            border-color: #0066cc;
+            background: #e6f3ff;
+        }
+
+        .activity-item .icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-item .name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .activity-item .duration {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #0055b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .saved-trips {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .trip-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .trip-item:hover {
+            background: #f8f9fa;
+        }
+
+        .trip-item:last-child {
+            border-bottom: none;
+        }
+
+        .trip-item-info h4 {
+            margin: 0;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .trip-item-info p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .trip-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .trip-actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        .itinerary-display {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .itinerary-display h3 {
+            color: #0066cc;
+            margin: 0 0 1rem 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-left: 3px solid #0066cc;
+            padding-left: 1.5rem;
+            margin-left: 0.5rem;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 1.25rem;
+            width: 12px;
+            height: 12px;
+            background: #0066cc;
+            border-radius: 50%;
+        }
+
+        .timeline-time {
+            font-weight: bold;
+            color: #0066cc;
+            min-width: 80px;
+        }
+
+        .timeline-content h4 {
+            margin: 0;
+            color: #333;
+        }
+
+        .timeline-content p {
+            margin: 0.25rem 0 0 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .storage-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .offline-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            z-index: 9999;
+        }
+
+        .offline-indicator.visible {
+            display: block;
+        }
+
+        @media (max-width: 900px) {
+            .planner-grid {
+                grid-template-columns: 1fr;
+            }
+            .activity-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
+    <header>
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <div class="search-container">
+                <form class="search-form" onsubmit="performSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Trip Planner</h2>
+        <p>Create your perfect aquarium adventure</p>
+    </section>
+
+    <div class="planner-container">
+        <div class="planner-grid">
+            <div class="main-panel">
+                <h2 style="color: #0066cc; margin-top: 0;">Plan Your Visit</h2>
+
+                <div class="form-group">
+                    <label for="tripName">Trip Name</label>
+                    <input type="text" id="tripName" placeholder="e.g., Family Weekend Trip">
+                </div>
+
+                <div class="form-group">
+                    <label for="visitDate">Visit Date</label>
+                    <input type="date" id="visitDate">
+                </div>
+
+                <div class="form-group">
+                    <label for="arrivalTime">Arrival Time</label>
+                    <select id="arrivalTime">
+                        <option value="09:00">9:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="13:00">1:00 PM</option>
+                        <option value="14:00">2:00 PM</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="groupSize">Group Size</label>
+                    <select id="groupSize">
+                        <option value="1">1 person</option>
+                        <option value="2">2 people</option>
+                        <option value="3-4">3-4 people</option>
+                        <option value="5+">5+ people</option>
+                    </select>
+                </div>
+
+                <label style="font-weight: bold; color: #333; margin-bottom: 0.75rem; display: block;">Select Activities</label>
+                <div class="activity-selector" id="activitySelector">
+                    <div class="activity-item" data-activity="coral-reef" data-duration="45">
+                        <span class="icon">🐠</span>
+                        <span class="name">Coral Reef</span>
+                        <span class="duration">45 min</span>
+                    </div>
+                    <div class="activity-item" data-activity="deep-sea" data-duration="30">
+                        <span class="icon">🦑</span>
+                        <span class="name">Deep Sea</span>
+                        <span class="duration">30 min</span>
+                    </div>
+                    <div class="activity-item" data-activity="marine-mammals" data-duration="40">
+                        <span class="icon">🦭</span>
+                        <span class="name">Marine Mammals</span>
+                        <span class="duration">40 min</span>
+                    </div>
+                    <div class="activity-item" data-activity="shark-encounter" data-duration="35">
+                        <span class="icon">🦈</span>
+                        <span class="name">Shark Encounter</span>
+                        <span class="duration">35 min</span>
+                    </div>
+                    <div class="activity-item" data-activity="jellyfish" data-duration="20">
+                        <span class="icon">🎐</span>
+                        <span class="name">Jellyfish Gallery</span>
+                        <span class="duration">20 min</span>
+                    </div>
+                    <div class="activity-item" data-activity="touch-pool" data-duration="25">
+                        <span class="icon">🤚</span>
+                        <span class="name">Touch Pool</span>
+                        <span class="duration">25 min</span>
+                    </div>
+                    <div class="activity-item" data-activity="feeding" data-duration="30">
+                        <span class="icon">🍽️</span>
+                        <span class="name">Feeding Show</span>
+                        <span class="duration">30 min</span>
+                    </div>
+                    <div class="activity-item" data-activity="cafe" data-duration="45">
+                        <span class="icon">☕</span>
+                        <span class="name">Ocean Cafe</span>
+                        <span class="duration">45 min</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Special Notes</label>
+                    <textarea id="notes" rows="3" placeholder="Any special requirements or notes..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveTrip()">Save Trip</button>
+
+                <div class="itinerary-display" id="itineraryDisplay" style="display: none;">
+                    <h3>Your Itinerary</h3>
+                    <div id="timeline"></div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="sidebar-card">
+                    <h3>📋 Saved Trips</h3>
+                    <div class="saved-trips" id="savedTrips">
+                        <div class="empty-state">No saved trips yet</div>
+                    </div>
+                    <div class="storage-info" id="storageInfo"></div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>💡 Tips</h3>
+                    <ul style="margin: 0; padding-left: 1.25rem; color: #666;">
+                        <li>Feeding shows are at 11 AM and 3 PM</li>
+                        <li>Touch pool is best before noon</li>
+                        <li>Allow 3-4 hours for full experience</li>
+                        <li>Weekday mornings are less crowded</li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>🗂️ Storage</h3>
+                    <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                        Your trips are saved locally in your browser and persist across sessions.
+                    </p>
+                    <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="exportAllTrips()">Export All Trips</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        const selectedActivities = new Set();
+
+        function getTrips() {
+            return JSON.parse(localStorage.getItem('aquarium_trips') || '[]');
+        }
+
+        function setTrips(trips) {
+            localStorage.setItem('aquarium_trips', JSON.stringify(trips));
+        }
+
+        function saveTrip() {
+            const tripName = document.getElementById('tripName').value.trim();
+            if (!tripName) {
+                alert('Please enter a trip name');
+                return;
+            }
+
+            if (selectedActivities.size === 0) {
+                alert('Please select at least one activity');
+                return;
+            }
+
+            const trip = {
+                id: Date.now().toString(),
+                name: tripName,
+                date: document.getElementById('visitDate').value,
+                arrivalTime: document.getElementById('arrivalTime').value,
+                groupSize: document.getElementById('groupSize').value,
+                activities: Array.from(selectedActivities),
+                notes: document.getElementById('notes').value,
+                createdAt: new Date().toISOString()
+            };
+
+            const trips = getTrips();
+            trips.push(trip);
+            setTrips(trips);
+
+            loadSavedTrips();
+            generateItinerary(trip);
+            updateStorageInfo();
+            alert('Trip saved successfully!');
+        }
+
+        function loadSavedTrips() {
+            const container = document.getElementById('savedTrips');
+            var trips = getTrips();
+
+            if (trips.length === 0) {
+                container.innerHTML = '<div class="empty-state">No saved trips yet</div>';
+                return;
+            }
+
+            trips.sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+
+            container.innerHTML = trips.map(function(trip) {
+                return '<div class="trip-item" onclick="loadTrip(\'' + trip.id + '\')">' +
+                    '<div class="trip-item-info">' +
+                    '<h4>' + trip.name + '</h4>' +
+                    '<p>' + (trip.date || 'No date set') + ' - ' + trip.activities.length + ' activities</p>' +
+                    '</div>' +
+                    '<div class="trip-actions">' +
+                    '<button class="btn btn-danger" onclick="event.stopPropagation(); deleteTrip(\'' + trip.id + '\')">🗑️</button>' +
+                    '</div></div>';
+            }).join('');
+        }
+
+        function loadTrip(tripId) {
+            var trips = getTrips();
+            var trip = trips.find(function(t) { return t.id === tripId; });
+
+            if (trip) {
+                document.getElementById('tripName').value = trip.name;
+                document.getElementById('visitDate').value = trip.date || '';
+                document.getElementById('arrivalTime').value = trip.arrivalTime || '09:00';
+                document.getElementById('groupSize').value = trip.groupSize || '2';
+                document.getElementById('notes').value = trip.notes || '';
+
+                selectedActivities.clear();
+                document.querySelectorAll('.activity-item').forEach(function(item) {
+                    item.classList.remove('selected');
+                    if (trip.activities.includes(item.dataset.activity)) {
+                        item.classList.add('selected');
+                        selectedActivities.add(item.dataset.activity);
+                    }
+                });
+
+                generateItinerary(trip);
+            }
+        }
+
+        function deleteTrip(tripId) {
+            if (!confirm('Are you sure you want to delete this trip?')) return;
+
+            var trips = getTrips().filter(function(t) { return t.id !== tripId; });
+            setTrips(trips);
+            loadSavedTrips();
+            updateStorageInfo();
+        }
+
+        // Generate itinerary
+        function generateItinerary(trip) {
+            const display = document.getElementById('itineraryDisplay');
+            const timeline = document.getElementById('timeline');
+
+            const activityData = {
+                'coral-reef': { name: 'Coral Reef Ecosystem', duration: 45, desc: 'Explore vibrant coral formations' },
+                'deep-sea': { name: 'Deep Sea Exploration', duration: 30, desc: 'Discover mysterious deep-sea creatures' },
+                'marine-mammals': { name: 'Marine Mammal Habitat', duration: 40, desc: 'Meet seals and sea lions' },
+                'shark-encounter': { name: 'Shark Encounter', duration: 35, desc: 'Get up close with sharks' },
+                'jellyfish': { name: 'Jellyfish Gallery', duration: 20, desc: 'Mesmerizing jellyfish display' },
+                'touch-pool': { name: 'Touch Pool', duration: 25, desc: 'Interactive tide pool experience' },
+                'feeding': { name: 'Feeding Show', duration: 30, desc: 'Watch our animals being fed' },
+                'cafe': { name: 'Ocean View Cafe', duration: 45, desc: 'Lunch break with a view' }
+            };
+
+            let currentTime = parseTime(trip.arrivalTime || '09:00');
+            let html = '';
+
+            trip.activities.forEach(activityId => {
+                const activity = activityData[activityId];
+                if (activity) {
+                    html += `
+                        <div class="timeline-item">
+                            <div class="timeline-time">${formatTime(currentTime)}</div>
+                            <div class="timeline-content">
+                                <h4>${activity.name}</h4>
+                                <p>${activity.desc} (${activity.duration} min)</p>
+                            </div>
+                        </div>
+                    `;
+                    currentTime += activity.duration;
+                }
+            });
+
+            html += `
+                <div class="timeline-item">
+                    <div class="timeline-time">${formatTime(currentTime)}</div>
+                    <div class="timeline-content">
+                        <h4>End of Visit</h4>
+                        <p>Thank you for visiting!</p>
+                    </div>
+                </div>
+            `;
+
+            timeline.innerHTML = html;
+            display.style.display = 'block';
+        }
+
+        function parseTime(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function formatTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+            return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+        }
+
+        function updateStorageInfo() {
+            var info = document.getElementById('storageInfo');
+            var trips = getTrips();
+            info.textContent = trips.length + ' saved trip' + (trips.length !== 1 ? 's' : '');
+        }
+
+        function exportAllTrips() {
+            var trips = getTrips();
+            var blob = new Blob([JSON.stringify(trips, null, 2)], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'aquarium-trips-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Activity selection
+        document.getElementById('activitySelector').addEventListener('click', (e) => {
+            const item = e.target.closest('.activity-item');
+            if (item) {
+                const activity = item.dataset.activity;
+                if (selectedActivities.has(activity)) {
+                    selectedActivities.delete(activity);
+                    item.classList.remove('selected');
+                } else {
+                    selectedActivities.add(activity);
+                    item.classList.add('selected');
+                }
+            }
+        });
+
+        // Search functionality
+        function performSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        // Offline detection
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (!navigator.onLine) {
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedTrips();
+            updateStorageInfo();
+            updateOnlineStatus();
+
+            // Set default date to today
+            document.getElementById('visitDate').valueAsDate = new Date();
+        });
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
+</body>
+</html>

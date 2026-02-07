@@ -257,14 +257,127 @@
         .logout-button:hover {
             background-color: #5a6268;
         }
+
+        .action-status {
+            display: none;
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            border: 1px solid transparent;
+        }
+
+        .action-status.success {
+            display: block;
+            background: #e8f7ee;
+            border-color: #2fad73;
+            color: #1e7a50;
+        }
+
+        .action-status.info {
+            display: block;
+            background: #e8f1fb;
+            border-color: #4a86e8;
+            color: #1f4e99;
+        }
+
+        .action-status.warning {
+            display: block;
+            background: #fff6e5;
+            border-color: #f0a202;
+            color: #9c6500;
+        }
+
+        .multi-tab-banner {
+            display: none;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .multi-tab-banner.visible {
+            display: block;
+        }
+
+        .broadcast-log {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .broadcast-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+        }
+
+        .broadcast-entry:last-child {
+            border-bottom: none;
+        }
+
+        .sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 1rem;
+        }
+
+        .sync-indicator.synced {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .sync-pulse {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: syncPulse 2s infinite;
+        }
+
+        @keyframes syncPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .offline-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            z-index: 9999;
+        }
+
+        .offline-indicator.visible {
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
     <header>
-        <div class="logo-container">
-            <img src="and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
             <h1>Aquatic Nature Discovery</h1>
-        </div>
+        </a>
         <nav>
             <a href="index.html">Home</a>
             <a href="exhibits.html">Exhibits</a>
@@ -296,7 +409,16 @@
 
         <div class="welcome-banner">
             <h3>👋 Welcome, Employee!</h3>
-            <p>Today's date: <span id="currentDate"></span> | Current time: <span id="currentTime"></span></p>
+            <p>Today's date: <span id="currentDate"></span> | Current time: <span id="currentTime"></span>
+                <span class="sync-indicator synced" id="syncIndicator">
+                    <span class="sync-pulse"></span>
+                    Tabs Synced
+                </span>
+            </p>
+        </div>
+
+        <div class="multi-tab-banner" id="multiTabBanner">
+            ⚠️ Portal is open in multiple tabs. Actions will be synchronized across all tabs.
         </div>
 
         <div class="status-panel">
@@ -363,18 +485,26 @@
                 <p>Track aquarium equipment, maintenance schedules, and replacement parts. Manage inventory and procurement processes.</p>
                 <a href="inventory.html" class="tool-button">Access Inventory</a>
             </div>
+
+            <div class="tool-card">
+                <span class="tool-icon">📝</span>
+                <h3>Reports Generator</h3>
+                <p>Create and manage operational reports including daily logs, incident reports, maintenance records, and visitor statistics.</p>
+                <a href="reports.html" class="tool-button">Generate Reports</a>
+            </div>
         </div>
 
         <div class="quick-actions">
             <h3>⚡ Quick Actions</h3>
             <div class="action-buttons">
-                <a href="#" class="action-button">📞 Emergency Contact</a>
-                <a href="#" class="action-button">🚨 Incident Report</a>
-                <a href="#" class="action-button warning">⚠️ Maintenance Alert</a>
-                <a href="#" class="action-button">📝 Daily Log</a>
-                <a href="#" class="action-button">🔔 Notifications</a>
-                <a href="#" class="action-button danger">🚪 Emergency Exit</a>
+                <a href="#" class="action-button" data-action="emergency">📞 Emergency Contact</a>
+                <a href="#" class="action-button" data-action="incident">🚨 Incident Report</a>
+                <a href="#" class="action-button warning" data-action="maintenance">⚠️ Maintenance Alert</a>
+                <a href="#" class="action-button" data-action="log">📝 Daily Log</a>
+                <a href="#" class="action-button" data-action="notifications">🔔 Notifications</a>
+                <a href="#" class="action-button danger" data-action="exit">🚪 Emergency Exit</a>
             </div>
+            <div id="actionStatus" class="action-status"></div>
         </div>
 
         <div class="logout-section">
@@ -393,10 +523,82 @@
     </footer>
 
     <script>
+        // ============================================
+        // Broadcast Channel for Multi-Tab Sync
+        // ============================================
+        const authChannel = new BroadcastChannel('aquarium_auth');
+        const portalChannel = new BroadcastChannel('aquarium_portal');
+        let tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        let otherTabs = new Set();
+
+        // Broadcast that this tab is open
+        function announceTab() {
+            portalChannel.postMessage({
+                type: 'tab_open',
+                tabId: tabId,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // Listen for auth events
+        authChannel.onmessage = (event) => {
+            console.log('Auth broadcast received:', event.data);
+
+            if (event.data.type === 'login') {
+                // Another tab logged in
+                console.log('Login detected from another tab');
+                checkLoginStatus();
+            } else if (event.data.type === 'logout') {
+                // Another tab logged out
+                console.log('Logout detected from another tab');
+                localStorage.removeItem('employeeLoggedIn');
+                checkLoginStatus();
+            }
+        };
+
+        // Listen for portal events
+        portalChannel.onmessage = (event) => {
+            console.log('Portal broadcast received:', event.data);
+
+            if (event.data.type === 'tab_open' && event.data.tabId !== tabId) {
+                otherTabs.add(event.data.tabId);
+                updateMultiTabBanner();
+                // Respond to let the new tab know we exist
+                portalChannel.postMessage({
+                    type: 'tab_acknowledge',
+                    tabId: tabId,
+                    respondingTo: event.data.tabId
+                });
+            } else if (event.data.type === 'tab_acknowledge' && event.data.respondingTo === tabId) {
+                otherTabs.add(event.data.tabId);
+                updateMultiTabBanner();
+            } else if (event.data.type === 'tab_close') {
+                otherTabs.delete(event.data.tabId);
+                updateMultiTabBanner();
+            } else if (event.data.type === 'action') {
+                // Sync action status across tabs
+                const actionStatus = document.getElementById('actionStatus');
+                if (actionStatus && event.data.tabId !== tabId) {
+                    actionStatus.textContent = `[Synced] ${event.data.message}`;
+                    actionStatus.className = `action-status ${event.data.statusType}`;
+                }
+            }
+        };
+
+        function updateMultiTabBanner() {
+            const banner = document.getElementById('multiTabBanner');
+            if (otherTabs.size > 0) {
+                banner.classList.add('visible');
+                banner.textContent = `⚠️ Portal is open in ${otherTabs.size + 1} tabs. Actions are synchronized.`;
+            } else {
+                banner.classList.remove('visible');
+            }
+        }
+
         // Check if user is logged in
         function checkLoginStatus() {
             const isLoggedIn = localStorage.getItem('employeeLoggedIn');
-            
+
             if (isLoggedIn === 'true') {
                 document.getElementById('portalContent').style.display = 'block';
                 document.getElementById('loginRequired').style.display = 'none';
@@ -410,17 +612,17 @@
         // Update date and time
         function updateDateTime() {
             const now = new Date();
-            const dateString = now.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            const dateString = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
             });
-            const timeString = now.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
             });
-            
+
             document.getElementById('currentDate').textContent = dateString;
             document.getElementById('currentTime').textContent = timeString;
         }
@@ -428,6 +630,14 @@
         // Logout function
         function logout() {
             localStorage.removeItem('employeeLoggedIn');
+
+            // Broadcast logout to other tabs
+            authChannel.postMessage({
+                type: 'logout',
+                tabId: tabId,
+                timestamp: new Date().toISOString()
+            });
+
             alert('You have been logged out successfully.');
             window.location.href = 'login.html';
         }
@@ -435,12 +645,93 @@
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             checkLoginStatus();
+            announceTab();
+
             // Update time every minute
             setInterval(updateDateTime, 60000);
+
+            // Wire up quick actions
+            const actionStatus = document.getElementById('actionStatus');
+            const quickActionButtons = document.querySelectorAll('.action-button[data-action]');
+
+            const showStatus = (message, type = 'info') => {
+                if (!actionStatus) return;
+                actionStatus.textContent = message;
+                actionStatus.className = `action-status ${type}`;
+
+                // Broadcast action to other tabs
+                portalChannel.postMessage({
+                    type: 'action',
+                    tabId: tabId,
+                    message: message,
+                    statusType: type,
+                    timestamp: new Date().toISOString()
+                });
+            };
+
+            quickActionButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const action = btn.getAttribute('data-action');
+
+                    switch (action) {
+                        case 'emergency':
+                            showStatus('Contacting on-site security dispatch at (555) 123-4567...', 'warning');
+                            break;
+                        case 'incident':
+                            showStatus('Opening incident report form...', 'info');
+                            window.location.href = 'reports.html';
+                            break;
+                        case 'maintenance':
+                            showStatus('Flagged urgent maintenance. Facilities team notified.', 'warning');
+                            break;
+                        case 'log':
+                            showStatus('Taking you to the daily log.', 'info');
+                            window.location.href = 'reports.html';
+                            break;
+                        case 'notifications':
+                            showStatus('Notifications synced. You are up to date.', 'success');
+                            break;
+                        case 'exit':
+                            showStatus('Nearest emergency exit: east corridor by the kelp forest exhibit.', 'warning');
+                            break;
+                        default:
+                            showStatus('Action completed.', 'info');
+                    }
+                });
+            });
+
+            updateOnlineStatus();
+        });
+
+        // Notify other tabs when closing
+        window.addEventListener('beforeunload', () => {
+            portalChannel.postMessage({
+                type: 'tab_close',
+                tabId: tabId
+            });
         });
 
         // Auto-refresh login status every 30 seconds
         setInterval(checkLoginStatus, 30000);
+
+        // Offline detection
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (!navigator.onLine) {
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
     </script>
 
     <script>
@@ -453,5 +744,7 @@
             }
         }
     </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
 </body>
-</html> 
+</html>
