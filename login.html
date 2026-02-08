@@ -337,7 +337,7 @@
 
                     // Set cookies for authentication tracking
                     const sessionToken = 'sess_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-                    setCookie('sessionToken', sessionToken, 1);
+                    document.cookie = `sessionToken=${sessionToken}; path=/; SameSite=Lax`;
                     setCookie('lastLoginTime', new Date().toISOString(), 30);
 
                     // Remember Me functionality
