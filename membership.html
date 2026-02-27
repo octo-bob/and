@@ -277,6 +277,68 @@
             display: block;
         }
 
+        .draft-banner {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .draft-banner strong {
+            display: block;
+            color: #856404;
+            margin-bottom: 0.25rem;
+        }
+
+        .draft-banner span {
+            color: #664d03;
+            font-size: 0.9rem;
+        }
+
+        .draft-banner-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .draft-banner-actions .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #6c757d;
+            border: 2px solid #6c757d;
+        }
+
+        .btn-outline:hover {
+            background: #6c757d;
+            color: white;
+        }
+
+        .draft-toast {
+            display: none;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .draft-toast.visible {
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -317,6 +379,17 @@
     </section>
 
     <div class="membership-container">
+        <div id="draftBanner" class="draft-banner" style="display:none;">
+            <div>
+                <strong>Resume your application?</strong>
+                <span>Saved draft from <span id="draftBannerDate"></span> &mdash; step <span id="draftBannerStep"></span> of 5</span>
+            </div>
+            <div class="draft-banner-actions">
+                <button type="button" class="btn btn-primary" onclick="resumeDraft()">Resume</button>
+                <button type="button" class="btn btn-secondary" onclick="dismissDraft()">Start Fresh</button>
+            </div>
+        </div>
+
         <div class="progress-bar">
             <div class="progress-step active" data-step="1">1</div>
             <div class="progress-step" data-step="2">2</div>
@@ -362,6 +435,7 @@
                 <input type="hidden" id="membershipPrice" name="membershipPrice" required>
                 <div class="btn-group">
                     <button type="button" class="btn btn-primary" onclick="nextStep()">Continue</button>
+                    <button type="button" class="btn btn-outline" onclick="saveAndExit()">Save &amp; Finish Later</button>
                 </div>
             </div>
 
@@ -396,6 +470,7 @@
                 <div class="btn-group">
                     <button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button>
                     <button type="button" class="btn btn-primary" onclick="nextStep()">Continue</button>
+                    <button type="button" class="btn btn-outline" onclick="saveAndExit()">Save &amp; Finish Later</button>
                 </div>
             </div>
 
@@ -433,6 +508,7 @@
                 <div class="btn-group">
                     <button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button>
                     <button type="button" class="btn btn-primary" onclick="nextStep()">Continue</button>
+                    <button type="button" class="btn btn-outline" onclick="saveAndExit()">Save &amp; Finish Later</button>
                 </div>
             </div>
 
@@ -467,6 +543,7 @@
                 <div class="btn-group">
                     <button type="button" class="btn btn-secondary" onclick="prevStep()">Back</button>
                     <button type="button" class="btn btn-primary" onclick="nextStep()">Review Order</button>
+                    <button type="button" class="btn btn-outline" onclick="saveAndExit()">Save &amp; Finish Later</button>
                 </div>
             </div>
 
@@ -512,6 +589,7 @@
                 </div>
             </div>
         </form>
+        <div id="draftToast" class="draft-toast">Progress saved! Return to this page anytime to pick up where you left off.</div>
     </div>
 
     <footer>
@@ -522,6 +600,112 @@
         let currentStep = 1;
         let selectedTier = null;
         let selectedPrice = 0;
+
+        // ─── IndexedDB Draft Persistence ─────────────────────────────────────────
+        const DRAFT_DB_NAME = 'MembershipDraftDB';
+        const DRAFT_DB_VERSION = 1;
+        const DRAFT_STORE = 'drafts';
+        const DRAFT_KEY = 'current';
+        let draftDB = null;
+
+        function initMembershipDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DRAFT_DB_NAME, DRAFT_DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    draftDB = request.result;
+                    resolve(draftDB);
+                };
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(DRAFT_STORE)) {
+                        db.createObjectStore(DRAFT_STORE, { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+
+        function collectFormData() {
+            // Exclude card number and CVV — sensitive data should not be persisted in a draft
+            const fields = ['firstName', 'lastName', 'email', 'phone', 'birthday',
+                            'street', 'apt', 'city', 'state', 'zip', 'country',
+                            'cardName', 'expiry', 'billingZip'];
+            const data = {};
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) data[id] = el.value;
+            });
+            return data;
+        }
+
+        function saveDraft() {
+            if (!draftDB || currentStep >= 6) return;
+            const draft = {
+                id: DRAFT_KEY,
+                step: currentStep,
+                tier: selectedTier,
+                price: selectedPrice,
+                formData: collectFormData(),
+                savedAt: new Date().toISOString()
+            };
+            const tx = draftDB.transaction([DRAFT_STORE], 'readwrite');
+            tx.objectStore(DRAFT_STORE).put(draft);
+        }
+
+        function clearDraft() {
+            if (!draftDB) return;
+            const tx = draftDB.transaction([DRAFT_STORE], 'readwrite');
+            tx.objectStore(DRAFT_STORE).delete(DRAFT_KEY);
+        }
+
+        function applyDraft(draft) {
+            if (draft.tier) {
+                selectMembership(draft.tier, draft.price);
+            }
+            Object.entries(draft.formData).forEach(([id, value]) => {
+                const el = document.getElementById(id);
+                if (el) el.value = value;
+            });
+            showStep(draft.step);
+        }
+
+        function checkForDraft() {
+            if (!draftDB) return;
+            const tx = draftDB.transaction([DRAFT_STORE], 'readonly');
+            const request = tx.objectStore(DRAFT_STORE).get(DRAFT_KEY);
+            request.onsuccess = () => {
+                const draft = request.result;
+                if (!draft) return;
+                const savedDate = new Date(draft.savedAt).toLocaleString('en-US', {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                document.getElementById('draftBannerDate').textContent = savedDate;
+                document.getElementById('draftBannerStep').textContent = draft.step;
+                const banner = document.getElementById('draftBanner');
+                banner.dataset.draft = JSON.stringify(draft);
+                banner.style.display = 'flex';
+            };
+        }
+
+        function resumeDraft() {
+            const banner = document.getElementById('draftBanner');
+            const draft = JSON.parse(banner.dataset.draft);
+            banner.style.display = 'none';
+            applyDraft(draft);
+        }
+
+        function dismissDraft() {
+            document.getElementById('draftBanner').style.display = 'none';
+            clearDraft();
+        }
+
+        function saveAndExit() {
+            saveDraft();
+            const toast = document.getElementById('draftToast');
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 4000);
+        }
+        // ─────────────────────────────────────────────────────────────────────────
 
         function selectMembership(tier, price) {
             selectedTier = tier;
@@ -534,6 +718,7 @@
 
             document.getElementById('membershipTier').value = tier;
             document.getElementById('membershipPrice').value = price;
+            saveDraft();
         }
 
         function updateProgress() {
@@ -587,11 +772,13 @@
             }
 
             showStep(currentStep + 1);
+            saveDraft();
         }
 
         function prevStep() {
             if (currentStep > 1) {
                 showStep(currentStep - 1);
+                saveDraft();
             }
         }
 
@@ -622,6 +809,9 @@
                 submittedAt: new Date().toISOString()
             }));
 
+            // Clear the IndexedDB draft on successful submission
+            clearDraft();
+
             // Show success
             document.getElementById('confirmEmail').textContent = data.email;
             showStep(6);
@@ -651,6 +841,9 @@
         window.addEventListener('online', updateOnlineStatus);
         window.addEventListener('offline', updateOnlineStatus);
         updateOnlineStatus();
+
+        // Initialize IndexedDB and check for a saved draft
+        initMembershipDB().then(checkForDraft).catch(() => {});
 
         // Service Worker registration
         if ('serviceWorker' in navigator) {

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Trip Planner - Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         .planner-container {
             max-width: 1200px;
@@ -273,6 +274,130 @@
             display: block;
         }
 
+        .pdf-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #e0e0e0;
+            gap: 0.5rem;
+        }
+
+        .pdf-item:last-child {
+            border-bottom: none;
+        }
+
+        .pdf-item-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .pdf-item-info strong {
+            font-size: 0.9rem;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pdf-item-info span {
+            font-size: 0.78rem;
+            color: #888;
+        }
+
+        .pdf-item-actions {
+            display: flex;
+            gap: 0.35rem;
+            flex-shrink: 0;
+        }
+
+        .pdf-item-actions .btn {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.78rem;
+        }
+
+        .pdf-unsupported {
+            font-size: 0.85rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        .pdf-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .pdf-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 820px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .pdf-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .pdf-modal-header h3 {
+            margin: 0;
+            color: #0066cc;
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pdf-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            line-height: 1;
+            cursor: pointer;
+            color: #666;
+            padding: 0 0.25rem;
+            flex-shrink: 0;
+        }
+
+        .pdf-modal-close:hover {
+            color: #333;
+        }
+
+        .pdf-modal-body {
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .pdf-modal-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            min-height: 500px;
+        }
+
+        .pdf-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
         @media (max-width: 900px) {
             .planner-grid {
                 grid-template-columns: 1fr;
@@ -403,6 +528,9 @@
                 <div class="itinerary-display" id="itineraryDisplay" style="display: none;">
                     <h3>Your Itinerary</h3>
                     <div id="timeline"></div>
+                    <div style="margin-top: 1rem;">
+                        <button id="generatePDFBtn" class="btn btn-primary" onclick="generateAndSavePDF()">Save as PDF</button>
+                    </div>
                 </div>
             </div>
 
@@ -432,6 +560,11 @@
                     </p>
                     <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="exportAllTrips()">Export All Trips</button>
                 </div>
+
+                <div class="sidebar-card">
+                    <h3>📄 Saved PDFs</h3>
+                    <div id="savedPDFsList"><div class="empty-state">No saved PDFs yet</div></div>
+                </div>
             </div>
         </div>
     </div>
@@ -442,6 +575,311 @@
 
     <script>
         const selectedActivities = new Set();
+        let currentTripForPDF  = null;
+        let currentPreviewURL  = null;
+        let currentPreviewName = '';
+
+        // ─── Utilities ────────────────────────────────────────────────────────────
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // ─── OPFS helpers ─────────────────────────────────────────────────────────
+        async function getTripPDFDir() {
+            const root = await navigator.storage.getDirectory();
+            return await root.getDirectoryHandle('trip-pdfs', { create: true });
+        }
+
+        async function savePDFToOPFS(trip, arrayBuffer) {
+            const dir = await getTripPDFDir();
+            const sanitized = trip.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-|-$/g, '').slice(0, 50);
+            const filename = `${sanitized}-${trip.id}.pdf`;
+            const fileHandle = await dir.getFileHandle(filename, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(arrayBuffer);
+            await writable.close();
+        }
+
+        async function findPDFFilename(dir, tripId) {
+            for await (const [name] of dir.entries()) {
+                if (name.endsWith(`-${tripId}.pdf`)) return name;
+            }
+            return null;
+        }
+
+        async function listPDFsInOPFS() {
+            const dir = await getTripPDFDir();
+            const ids = [];
+            for await (const [name] of dir.entries()) {
+                if (!name.endsWith('.pdf')) continue;
+                const match = name.match(/-(\d{13})\.pdf$/);
+                if (match) ids.push(match[1]);
+            }
+            return ids.sort((a, b) => Number(b) - Number(a)); // newest first
+        }
+
+        async function loadPDFBytesFromOPFS(tripId) {
+            const dir = await getTripPDFDir();
+            const filename = await findPDFFilename(dir, tripId);
+            if (!filename) throw new Error('PDF not found');
+            const fileHandle = await dir.getFileHandle(filename);
+            const file = await fileHandle.getFile();
+            return await file.arrayBuffer();
+        }
+
+        async function deletePDFFromOPFS(tripId) {
+            const dir = await getTripPDFDir();
+            const filename = await findPDFFilename(dir, tripId);
+            if (filename) await dir.removeEntry(filename);
+        }
+
+        // ─── PDF generation ───────────────────────────────────────────────────────
+        const PDF_ACTIVITY_DATA = {
+            'coral-reef':      { name: 'Coral Reef Ecosystem',  duration: 45, desc: 'Explore vibrant coral formations' },
+            'deep-sea':        { name: 'Deep Sea Exploration',  duration: 30, desc: 'Discover mysterious deep-sea creatures' },
+            'marine-mammals':  { name: 'Marine Mammal Habitat', duration: 40, desc: 'Meet seals and sea lions' },
+            'shark-encounter': { name: 'Shark Encounter',       duration: 35, desc: 'Get up close with sharks' },
+            'jellyfish':       { name: 'Jellyfish Gallery',     duration: 20, desc: 'Mesmerizing jellyfish display' },
+            'touch-pool':      { name: 'Touch Pool',            duration: 25, desc: 'Interactive tide pool experience' },
+            'feeding':         { name: 'Feeding Show',          duration: 30, desc: 'Watch our animals being fed' },
+            'cafe':            { name: 'Ocean View Cafe',       duration: 45, desc: 'Lunch break with a view' }
+        };
+
+        async function generatePDFBytes(trip) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+            const pageW   = doc.internal.pageSize.getWidth();
+            const margin  = 20;
+            const contentW = pageW - margin * 2;
+
+            // Header band
+            doc.setFillColor(0, 102, 204);
+            doc.rect(0, 0, pageW, 28, 'F');
+            doc.setFontSize(17);
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Aquatic Nature Discovery', pageW / 2, 12, { align: 'center' });
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Trip Itinerary', pageW / 2, 21, { align: 'center' });
+
+            // Trip name
+            let y = 40;
+            doc.setFontSize(15);
+            doc.setTextColor(0, 102, 204);
+            doc.setFont('helvetica', 'bold');
+            doc.text(trip.name, margin, y);
+
+            // Meta row
+            y += 7;
+            doc.setFontSize(9);
+            doc.setTextColor(120, 120, 120);
+            doc.setFont('helvetica', 'normal');
+            const metaParts = [];
+            if (trip.date) metaParts.push(`Date: ${trip.date}`);
+            metaParts.push(`Group: ${trip.groupSize}`);
+            metaParts.push(`Arrival: ${formatTime(parseTime(trip.arrivalTime || '09:00'))}`);
+            doc.text(metaParts.join('   \u2022   '), margin, y);
+
+            // Divider
+            y += 6;
+            doc.setDrawColor(0, 102, 204);
+            doc.setLineWidth(0.4);
+            doc.line(margin, y, pageW - margin, y);
+
+            // Section heading
+            y += 8;
+            doc.setFontSize(11);
+            doc.setTextColor(0, 102, 204);
+            doc.setFont('helvetica', 'bold');
+            doc.text('ITINERARY', margin, y);
+
+            // Timeline rows
+            y += 6;
+            let currentTime = parseTime(trip.arrivalTime || '09:00');
+
+            trip.activities.forEach(activityId => {
+                const activity = PDF_ACTIVITY_DATA[activityId];
+                if (!activity) return;
+
+                doc.setFontSize(10);
+                doc.setTextColor(0, 102, 204);
+                doc.setFont('helvetica', 'bold');
+                doc.text(formatTime(currentTime), margin, y);
+
+                doc.setTextColor(30, 30, 30);
+                doc.text(activity.name, margin + 22, y);
+
+                doc.setFontSize(8);
+                doc.setTextColor(120, 120, 120);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`${activity.desc} \u2014 ${activity.duration} min`, margin + 22, y + 4.5);
+
+                doc.setDrawColor(225, 225, 225);
+                doc.setLineWidth(0.2);
+                doc.line(margin, y + 8, pageW - margin, y + 8);
+
+                currentTime += activity.duration;
+                y += 14;
+            });
+
+            // End of visit
+            doc.setFontSize(10);
+            doc.setTextColor(0, 102, 204);
+            doc.setFont('helvetica', 'bold');
+            doc.text(formatTime(currentTime), margin, y);
+            doc.setTextColor(30, 30, 30);
+            doc.text('End of Visit', margin + 22, y);
+            y += 5;
+            doc.setDrawColor(0, 102, 204);
+            doc.setLineWidth(0.4);
+            doc.line(margin, y, pageW - margin, y);
+
+            // Notes
+            if (trip.notes && trip.notes.trim()) {
+                y += 10;
+                doc.setFontSize(11);
+                doc.setTextColor(0, 102, 204);
+                doc.setFont('helvetica', 'bold');
+                doc.text('NOTES', margin, y);
+                y += 6;
+                doc.setFontSize(9);
+                doc.setTextColor(60, 60, 60);
+                doc.setFont('helvetica', 'normal');
+                const noteLines = doc.splitTextToSize(trip.notes, contentW);
+                doc.text(noteLines, margin, y);
+            }
+
+            // Footer
+            doc.setFontSize(7.5);
+            doc.setTextColor(180, 180, 180);
+            doc.text(
+                `Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
+                pageW / 2, 287, { align: 'center' }
+            );
+
+            return doc.output('arraybuffer');
+        }
+
+        async function generateAndSavePDF() {
+            if (!currentTripForPDF) return;
+            const btn = document.getElementById('generatePDFBtn');
+            btn.disabled = true;
+            btn.textContent = 'Generating\u2026';
+            try {
+                const bytes = await generatePDFBytes(currentTripForPDF);
+                await savePDFToOPFS(currentTripForPDF, bytes);
+                await loadSavedPDFs();
+                btn.textContent = 'Saved!';
+                setTimeout(() => { btn.disabled = false; btn.textContent = 'Save as PDF'; }, 2000);
+            } catch (err) {
+                console.error('PDF error:', err);
+                btn.disabled = false;
+                btn.textContent = 'Save as PDF';
+                alert('Failed to generate PDF: ' + err.message);
+            }
+        }
+
+        // ─── PDF gallery ──────────────────────────────────────────────────────────
+        async function loadSavedPDFs() {
+            const container = document.getElementById('savedPDFsList');
+            if (!('storage' in navigator && 'getDirectory' in navigator.storage)) {
+                container.innerHTML = '<p class="pdf-unsupported">OPFS not supported in this browser.</p>';
+                return;
+            }
+            try {
+                const ids = await listPDFsInOPFS();
+                if (ids.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No saved PDFs yet</div>';
+                    return;
+                }
+                const trips = getTrips();
+                container.innerHTML = ids.map(tripId => {
+                    const trip = trips.find(t => t.id === tripId);
+                    const name = trip ? trip.name : `Trip ${tripId}`;
+                    const date = trip ? (trip.date || 'No date set') : 'Unknown date';
+                    return `
+                        <div class="pdf-item">
+                            <div class="pdf-item-info">
+                                <strong>${escapeHtml(name)}</strong>
+                                <span>${escapeHtml(date)}</span>
+                            </div>
+                            <div class="pdf-item-actions">
+                                <button class="btn btn-secondary"
+                                    data-id="${tripId}" data-name="${escapeHtml(name)}"
+                                    onclick="previewPDF(this.dataset.id, this.dataset.name)">Preview</button>
+                                <button class="btn btn-primary"
+                                    data-id="${tripId}" data-name="${escapeHtml(name)}"
+                                    onclick="downloadPDF(this.dataset.id, this.dataset.name)">Download</button>
+                                <button class="btn btn-danger"
+                                    data-id="${tripId}"
+                                    onclick="deletePDF(this.dataset.id)">\uD83D\uDDD1\uFE0F</button>
+                            </div>
+                        </div>`;
+                }).join('');
+            } catch (err) {
+                container.innerHTML = '<div class="empty-state">No saved PDFs yet</div>';
+            }
+        }
+
+        async function previewPDF(tripId, name) {
+            try {
+                const bytes = await loadPDFBytesFromOPFS(tripId);
+                const blob  = new Blob([bytes], { type: 'application/pdf' });
+                if (currentPreviewURL) URL.revokeObjectURL(currentPreviewURL);
+                currentPreviewURL  = URL.createObjectURL(blob);
+                currentPreviewName = name;
+                document.getElementById('pdfModalTitle').textContent = name;
+                document.getElementById('pdfModalFrame').src = currentPreviewURL;
+                document.getElementById('pdfModal').style.display = 'flex';
+            } catch (err) {
+                alert('Could not load PDF preview.');
+            }
+        }
+
+        async function downloadPDF(tripId, name) {
+            try {
+                const bytes = await loadPDFBytesFromOPFS(tripId);
+                const blob  = new Blob([bytes], { type: 'application/pdf' });
+                const url   = URL.createObjectURL(blob);
+                const a     = document.createElement('a');
+                a.href     = url;
+                a.download = `${name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                alert('Could not download PDF.');
+            }
+        }
+
+        async function deletePDF(tripId) {
+            if (!confirm('Delete this saved PDF?')) return;
+            try {
+                await deletePDFFromOPFS(tripId);
+                await loadSavedPDFs();
+            } catch (err) {
+                alert('Could not delete PDF.');
+            }
+        }
+
+        function downloadCurrentPDF() {
+            if (!currentPreviewURL) return;
+            const a    = document.createElement('a');
+            a.href     = currentPreviewURL;
+            a.download = `${currentPreviewName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
+            a.click();
+        }
+
+        function closePDFModal() {
+            document.getElementById('pdfModal').style.display = 'none';
+            document.getElementById('pdfModalFrame').src = 'about:blank';
+            if (currentPreviewURL) { URL.revokeObjectURL(currentPreviewURL); currentPreviewURL = null; }
+        }
+        // ─────────────────────────────────────────────────────────────────────────
 
         function getTrips() {
             return JSON.parse(localStorage.getItem('aquarium_trips') || '[]');
@@ -542,6 +980,7 @@
 
         // Generate itinerary
         function generateItinerary(trip) {
+            currentTripForPDF = trip;
             const display = document.getElementById('itineraryDisplay');
             const timeline = document.getElementById('timeline');
 
@@ -661,6 +1100,7 @@
             loadSavedTrips();
             updateStorageInfo();
             updateOnlineStatus();
+            loadSavedPDFs();
 
             // Set default date to today
             document.getElementById('visitDate').valueAsDate = new Date();
@@ -671,6 +1111,22 @@
             navigator.serviceWorker.register('/sw.js').catch(() => {});
         }
     </script>
+    <div id="pdfModal" class="pdf-modal" style="display:none;" onclick="if(event.target===this)closePDFModal()">
+        <div class="pdf-modal-content">
+            <div class="pdf-modal-header">
+                <h3 id="pdfModalTitle">PDF Preview</h3>
+                <button class="pdf-modal-close" onclick="closePDFModal()">×</button>
+            </div>
+            <div class="pdf-modal-body">
+                <iframe id="pdfModalFrame" src="about:blank" title="PDF Preview"></iframe>
+            </div>
+            <div class="pdf-modal-footer">
+                <button class="btn btn-primary" onclick="downloadCurrentPDF()">Download PDF</button>
+                <button class="btn btn-secondary" onclick="closePDFModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script src="scripts/dark-mode.js"></script>
     <script src="scripts/session-tracker.js"></script>
 </body>
