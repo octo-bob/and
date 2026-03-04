@@ -534,6 +534,7 @@
             document.getElementById('maintenanceTime').value = '';
             document.getElementById('reminderNotification').checked = false;
             
+            scheduleReminders();
             alert('Maintenance entry added successfully!');
         }
 
@@ -580,8 +581,8 @@
             // Set default date to today
             document.getElementById('maintenanceDate').value = new Date().toISOString().split('T')[0];
             
-            // Start reminder checker (permission will be requested when needed)
-            startReminderChecker();
+            // Schedule any saved reminders if permission already granted
+            scheduleReminders();
             
             // Add event listener for reminder checkbox
             document.getElementById('reminderNotification').addEventListener('change', function() {
@@ -599,7 +600,7 @@
             if ('Notification' in window) {
                 Notification.requestPermission().then(function(permission) {
                     if (permission === 'granted') {
-                        console.log('Notification permission granted');
+                        scheduleReminders();
                     } else if (permission === 'denied') {
                         console.log('Notification permission denied');
                         // Uncheck the checkbox if permission is denied
@@ -613,35 +614,30 @@
             }
         }
 
-        function startReminderChecker() {
-            // Check for due reminders every minute
-            setInterval(checkDueReminders, 60000);
-        }
+        const reminderTimeouts = {};
 
-        function checkDueReminders() {
+        function scheduleReminders() {
+            // Cancel any previously scheduled reminders
+            Object.values(reminderTimeouts).forEach(id => clearTimeout(id));
+            Object.keys(reminderTimeouts).forEach(k => delete reminderTimeouts[k]);
+
+            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
             const entries = JSON.parse(localStorage.getItem('maintenanceEntries') || '[]');
             const now = new Date();
-            const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
-            const currentDate = now.toISOString().split('T')[0];
 
             entries.forEach(entry => {
-                if (entry.reminderEnabled && entry.status !== 'Completed') {
-                    const dueDate = entry.date;
-                    const dueTime = entry.dueTime;
-                    
-                    // Check if it's due today and the time matches (within 1 minute)
-                    if (dueDate === currentDate && dueTime && dueTime !== 'No time specified') {
-                        const [dueHour, dueMinute] = dueTime.split(':').map(Number);
-                        const [currentHour, currentMinute] = currentTime.split(':').map(Number);
-                        
-                        const dueMinutes = dueHour * 60 + dueMinute;
-                        const currentMinutes = currentHour * 60 + currentMinute;
-                        
-                        // Show notification if due within the next minute
-                        if (Math.abs(dueMinutes - currentMinutes) <= 1) {
-                            showMaintenanceReminder(entry);
-                        }
-                    }
+                if (!entry.reminderEnabled || entry.status === 'Completed') return;
+                if (!entry.date || !entry.dueTime || entry.dueTime === 'No time specified') return;
+
+                const dueDateTime = new Date(`${entry.date}T${entry.dueTime}:00`);
+                const msUntilDue = dueDateTime - now;
+
+                if (msUntilDue > 0) {
+                    reminderTimeouts[entry.id] = setTimeout(() => {
+                        showMaintenanceReminder(entry);
+                        delete reminderTimeouts[entry.id];
+                    }, msUntilDue);
                 }
             });
         }

@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Notification Builder - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .builder-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .builder-grid {
+            display: grid;
+            grid-template-columns: 1fr 370px;
+            gap: 2rem;
+            align-items: stretch;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            margin: 0 0 1.25rem 0;
+            color: #0066cc;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ── Permission bar ── */
+        .permission-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .permission-status {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.925rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-dot.granted { background: #28a745; box-shadow: 0 0 0 3px rgba(40,167,69,0.2); }
+        .status-dot.denied  { background: #dc3545; box-shadow: 0 0 0 3px rgba(220,53,69,0.2); }
+        .status-dot.default { background: #ffc107; box-shadow: 0 0 0 3px rgba(255,193,7,0.2); }
+
+        .denied-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: #856404;
+            margin-top: 0.75rem;
+            display: none;
+        }
+
+        /* ── Form ── */
+        .form-section { margin-bottom: 1.25rem; }
+
+        .form-section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #999;
+            margin: 0 0 0.75rem 0;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 0.35rem;
+        }
+
+        .form-group label .opt {
+            font-weight: 400;
+            color: #aaa;
+            font-size: 0.78rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group input[type="number"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .form-group textarea { resize: vertical; min-height: 72px; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .checkbox-group input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; }
+
+        .checkbox-group label {
+            font-size: 0.875rem;
+            color: #444;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        /* ── URL + thumbnail ── */
+        .url-preview-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .url-preview-row input { flex: 1; }
+
+        .icon-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            object-fit: cover;
+            flex-shrink: 0;
+            display: none;
+        }
+
+        .img-preview-wrap { margin-top: 0.5rem; display: none; }
+
+        .img-preview-wrap img {
+            width: 100%;
+            max-height: 110px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+        }
+
+        /* ── Action rows ── */
+        .action-row-label {
+            font-size: 0.75rem;
+            color: #aaa;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .action-row input {
+            padding: 0.55rem 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .action-row input:focus { outline: none; border-color: #0066cc; }
+
+        .action-row-heads {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-row-heads span {
+            font-size: 0.72rem;
+            color: #bbb;
+            padding-left: 0.25rem;
+        }
+
+        /* ── Templates ── */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .tpl-btn {
+            padding: 0.6rem 0.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            font-size: 0.78rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            line-height: 1.3;
+            color: #444;
+        }
+
+        .tpl-btn:hover {
+            border-color: #0066cc;
+            background: #e6f3ff;
+            color: #0066cc;
+        }
+
+        .tpl-btn .tpl-icon { display: block; font-size: 1.25rem; margin-bottom: 0.2rem; }
+
+        /* ── Send controls ── */
+        .send-stack { display: flex; flex-direction: column; gap: 0.6rem; }
+
+        .send-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.925rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .send-btn.primary   { background: #0066cc; color: white; }
+        .send-btn.primary:hover  { background: #0055b3; }
+        .send-btn.secondary { background: #6c757d; color: white; }
+        .send-btn.secondary:hover { background: #5a6268; }
+        .send-btn.counting  { background: #ffc107; color: #212529; }
+        .send-btn:disabled  { opacity: 0.55; cursor: not-allowed; }
+
+        .send-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+
+        .custom-send-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: stretch;
+        }
+
+        .custom-send-row input {
+            width: 90px;
+            flex-shrink: 0;
+            padding: 0.65rem 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .custom-send-row input:focus { outline: none; border-color: #0066cc; }
+        .custom-send-row .send-btn  { flex: 1; }
+
+        /* ── Notification mockup ── */
+        .notif-mockup {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .notif-topbar {
+            background: #f1f3f4;
+            padding: 0.3rem 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .notif-origin {
+            font-size: 0.7rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .notif-origin img { width: 13px; height: 13px; border-radius: 2px; }
+        .notif-x          { font-size: 1.1rem; color: #999; line-height: 1; }
+
+        .notif-body {
+            padding: 0.75rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .notif-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            background: #e6f3ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            overflow: hidden;
+        }
+
+        .notif-icon img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+        .notif-text { flex: 1; min-width: 0; }
+
+        .notif-title {
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: #111;
+            margin-bottom: 0.25rem;
+            word-break: break-word;
+        }
+
+        .notif-message {
+            font-size: 0.8rem;
+            color: #555;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .notif-large-image { display: none; border-top: 1px solid #eee; }
+
+        .notif-large-image img {
+            width: 100%;
+            max-height: 140px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .notif-actions {
+            display: none;
+            border-top: 1px solid #eee;
+            padding: 0.4rem 0.6rem;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .notif-action-chip {
+            padding: 0.3rem 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            background: #f8f9fa;
+            color: #444;
+        }
+
+        .preview-note {
+            font-size: 0.78rem;
+            color: #aaa;
+            text-align: center;
+            margin: 0.6rem 0 0 0;
+            font-style: italic;
+        }
+
+        /* ── Event log ── */
+        .log-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 0.4rem;
+        }
+
+        .log-clear {
+            background: none;
+            border: 1px solid #ccc;
+            color: #888;
+            border-radius: 4px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .log-clear:hover { color: #444; border-color: #888; }
+
+        .event-log {
+            background: #12121e;
+            border-radius: 8px;
+            padding: 0.75rem;
+            min-height: 140px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.78rem;
+            line-height: 1.6;
+            color: #d0d0d0;
+        }
+
+        .log-entry { margin-bottom: 0.1rem; }
+        .log-t     { color: #888; }
+        .log-show  { color: #4fc3f7; }
+        .log-click { color: #6fcf7f; }
+        .log-close { color: #f5c842; }
+        .log-error { color: #ff7b7b; }
+        .log-info  { color: #c792ea; }
+        .log-sched { color: #ffb74d; }
+
+        .log-empty {
+            color: #444;
+            text-align: center;
+            padding: 1.5rem 0;
+            font-family: inherit;
+        }
+
+        /* ── Login gate ── */
+        .login-required {
+            text-align: center;
+            padding: 3rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            max-width: 500px;
+            margin: 2rem auto;
+        }
+
+        .login-required h3 { color: #dc3545; margin-bottom: 1rem; }
+        .login-required p  { color: #666; margin-bottom: 1.5rem; }
+
+        .right-col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-col .card:last-child {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+        }
+
+        .right-col .card:last-child .event-log {
+            flex: 1;
+        }
+
+        .left-col .card:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 900px) {
+            .builder-grid       { grid-template-columns: 1fr; }
+            .template-grid      { grid-template-columns: repeat(3, 1fr); }
+            .right-col          { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
+
+    <header>
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+            <a href="portal.html">Employee Portal</a>
+            <div class="search-container">
+                <form class="search-form" onsubmit="performSearch(event)">
+                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+            </div>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Notification Builder</h2>
+        <p>Build, preview, and test browser notifications</p>
+    </section>
+
+    <!-- Login gate -->
+    <div class="login-required" id="loginRequired" style="display:none;">
+        <h3>🔒 Access Restricted</h3>
+        <p>This tool requires employee authentication. Please log in to access the Notification Builder.</p>
+        <a href="login.html" class="login-button">Employee Login</a>
+    </div>
+
+    <!-- Main content -->
+    <div class="builder-container" id="builderContent" style="display:none;">
+        <div class="builder-grid">
+
+            <!-- ═══════════ LEFT COLUMN ═══════════ -->
+            <div class="left-col">
+
+                <!-- Permission -->
+                <div class="card">
+                    <h3>🔒 Browser Permission</h3>
+                    <div class="permission-bar">
+                        <div class="permission-status">
+                            <div class="status-dot default" id="statusDot"></div>
+                            <span id="statusText">Checking…</span>
+                        </div>
+                        <button class="send-btn primary" id="requestPermBtn"
+                                style="width:auto;padding:0.5rem 1.25rem;font-size:0.875rem;"
+                                onclick="requestPermission()">
+                            Request Permission
+                        </button>
+                    </div>
+                    <div class="denied-warning" id="deniedWarning">
+                        Permission was denied. To reset: open browser Settings → Privacy &amp; Security →
+                        Site Settings → Notifications → find this origin → Reset to default.
+                    </div>
+                </div>
+
+                <!-- Builder -->
+                <div class="card">
+                    <h3>🔔 Notification Builder</h3>
+
+                    <!-- Content -->
+                    <div class="form-section">
+                        <div class="form-section-title">Content</div>
+
+                        <div class="form-group">
+                            <label for="ntfTitle">Title</label>
+                            <input type="text" id="ntfTitle" placeholder="Aquatic Nature Discovery"
+                                   oninput="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ntfBody">Body <span class="opt">(optional)</span></label>
+                            <textarea id="ntfBody" placeholder="Enter the notification message…"
+                                      oninput="updatePreview()"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ntfClickUrl">Link on Click <span class="opt">(opens in new tab when notification is clicked)</span></label>
+                            <input type="url" id="ntfClickUrl" placeholder="https://…">
+                        </div>
+                    </div>
+
+                    <!-- Images -->
+                    <div class="form-section">
+                        <div class="form-section-title">Images</div>
+
+                        <div class="form-group">
+                            <label for="ntfIcon">Icon URL <span class="opt">(recommended 192×192px)</span></label>
+                            <div class="url-preview-row">
+                                <input type="url" id="ntfIcon"
+                                       placeholder="https://… or images/and-logo.png"
+                                       oninput="onIconChange()">
+                                <img class="icon-thumb" id="iconThumb" src="" alt="icon preview">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ntfImage">Image URL <span class="opt">(large banner, ~360×180px)</span></label>
+                            <input type="url" id="ntfImage" placeholder="https://…" oninput="onImageChange()">
+                            <div class="img-preview-wrap" id="imagePreviewWrap">
+                                <img id="imagePreview" src="" alt="image preview">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ntfBadge">Badge URL <span class="opt">(96×96px monochrome, shown on Android)</span></label>
+                            <input type="url" id="ntfBadge" placeholder="https://…">
+                        </div>
+                    </div>
+
+                    <!-- Behavior -->
+                    <div class="form-section">
+                        <div class="form-section-title">Behavior</div>
+
+                        <div class="form-row" style="margin-bottom:1rem;">
+                            <div class="form-group" style="margin:0;">
+                                <label for="ntfTag">Tag <span class="opt">(deduplication key)</span></label>
+                                <input type="text" id="ntfTag" placeholder="e.g. event-alert">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label for="ntfDir">Text Direction</label>
+                                <select id="ntfDir">
+                                    <option value="auto">Auto</option>
+                                    <option value="ltr">LTR</option>
+                                    <option value="rtl">RTL</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ntfVibrate">Vibrate Pattern <span class="opt">(ms on, off, on… e.g. 200,100,200)</span></label>
+                            <input type="text" id="ntfVibrate" placeholder="200, 100, 200">
+                        </div>
+
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="ntfRequireInteraction">
+                            <label for="ntfRequireInteraction">Require Interaction — stays until user dismisses</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="ntfSilent">
+                            <label for="ntfSilent">Silent — no sound or vibration</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="ntfRenotify">
+                            <label for="ntfRenotify">Renotify — re-alert even when tag matches existing</label>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-section" style="margin-bottom:0;">
+                        <div class="form-section-title">
+                            Actions
+                            <span style="font-size:0.72rem;color:#ccc;font-weight:400;text-transform:none;letter-spacing:0;">
+                                — requires service worker context; ignored in plain page notifications
+                            </span>
+                        </div>
+
+                        <div class="action-row-heads">
+                            <span>Button label</span><span>Action ID</span>
+                        </div>
+                        <div class="action-row-label">Action 1</div>
+                        <div class="action-row">
+                            <input type="text" id="ntfA1Label" placeholder="e.g. View details" oninput="updatePreview()">
+                            <input type="text" id="ntfA1Id"    placeholder="e.g. view">
+                        </div>
+                        <div class="action-row-label">Action 2</div>
+                        <div class="action-row" style="margin-bottom:0;">
+                            <input type="text" id="ntfA2Label" placeholder="e.g. Dismiss" oninput="updatePreview()">
+                            <input type="text" id="ntfA2Id"    placeholder="e.g. dismiss">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ═══════════ RIGHT COLUMN ═══════════ -->
+            <div class="right-col">
+
+                <!-- Live preview -->
+                <div class="card">
+                    <h3>👁️ Live Preview</h3>
+                    <div class="notif-mockup">
+                        <div class="notif-topbar">
+                            <div class="notif-origin">
+                                <img src="images/and-logo.png" alt="">
+                                <span id="pvOrigin"></span>
+                            </div>
+                            <span class="notif-x">×</span>
+                        </div>
+                        <div class="notif-body">
+                            <div class="notif-icon" id="pvIconWrap">
+                                <span id="pvIconEmoji">🌊</span>
+                                <img id="pvIconImg" src="" alt="">
+                            </div>
+                            <div class="notif-text">
+                                <div class="notif-title"   id="pvTitle">Aquatic Nature Discovery</div>
+                                <div class="notif-message" id="pvBody" style="opacity:.4;">No body text</div>
+                            </div>
+                        </div>
+                        <div class="notif-large-image" id="pvImageWrap">
+                            <img id="pvImage" src="" alt="">
+                        </div>
+                        <div class="notif-actions" id="pvActions"></div>
+                    </div>
+                    <p class="preview-note">Approximate preview — appearance varies by OS and browser</p>
+                </div>
+
+                <!-- Templates -->
+                <div class="card">
+                    <h3>📋 Templates</h3>
+                    <div class="template-grid">
+                        <button class="tpl-btn" onclick="applyTemplate('welcome')">
+                            <span class="tpl-icon">👋</span>Welcome
+                        </button>
+                        <button class="tpl-btn" onclick="applyTemplate('event')">
+                            <span class="tpl-icon">🦈</span>Event Alert
+                        </button>
+                        <button class="tpl-btn" onclick="applyTemplate('emergency')">
+                            <span class="tpl-icon">🚨</span>Emergency
+                        </button>
+                        <button class="tpl-btn" onclick="applyTemplate('exhibit')">
+                            <span class="tpl-icon">🪸</span>New Exhibit
+                        </button>
+                        <button class="tpl-btn" onclick="applyTemplate('closing')">
+                            <span class="tpl-icon">⏰</span>Closing Soon
+                        </button>
+                        <button class="tpl-btn" onclick="applyTemplate('offer')">
+                            <span class="tpl-icon">🎟️</span>Special Offer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Send -->
+                <div class="card">
+                    <h3>🚀 Send Test Notification</h3>
+                    <div class="send-stack">
+                        <button class="send-btn primary" id="sendNowBtn" onclick="sendNow()">
+                            Send Now
+                        </button>
+                        <div class="send-row">
+                            <button class="send-btn secondary" id="send5Btn"
+                                    onclick="toggleSchedule(5, 'send5Btn', 'Send in 5s')">
+                                Send in 5s
+                            </button>
+                            <button class="send-btn secondary" id="send30Btn"
+                                    onclick="toggleSchedule(30, 'send30Btn', 'Send in 30s')">
+                                Send in 30s
+                            </button>
+                        </div>
+                        <div class="custom-send-row">
+                            <input type="number" id="customDelay" placeholder="sec" min="1" max="3600">
+                            <button class="send-btn secondary" id="sendCustomBtn"
+                                    onclick="toggleCustomSchedule()">
+                                Custom delay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event log -->
+                <div class="card">
+                    <h3>📋 Event Log</h3>
+                    <div class="log-toolbar">
+                        <button class="log-clear" onclick="clearLog()">Clear</button>
+                    </div>
+                    <div class="event-log" id="eventLog">
+                        <div class="log-empty" id="logEmpty">No events yet. Send a notification to begin.</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | Employee Portal</p>
+    </footer>
+
+    <script>
+        // ─── Auth gate ────────────────────────────────────────────────────────────
+        function checkLoginStatus() {
+            const ok = localStorage.getItem('employeeLoggedIn') === 'true';
+            document.getElementById('builderContent').style.display = ok ? 'block' : 'none';
+            document.getElementById('loginRequired').style.display  = ok ? 'none'  : 'block';
+        }
+
+        setInterval(checkLoginStatus, 30000);
+
+        // ─── Utilities ───────────────────────────────────────────────────────────
+        function esc(str) {
+            return String(str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // ─── Permission ──────────────────────────────────────────────────────────
+        function updatePermissionUI() {
+            const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
+            const dot  = document.getElementById('statusDot');
+            const txt  = document.getElementById('statusText');
+            const btn  = document.getElementById('requestPermBtn');
+            const warn = document.getElementById('deniedWarning');
+
+            dot.className = 'status-dot';
+            warn.style.display = 'none';
+            btn.style.display  = 'none';
+
+            if (perm === 'granted') {
+                dot.classList.add('granted');
+                txt.textContent = 'Granted — ready to send';
+            } else if (perm === 'denied') {
+                dot.classList.add('denied');
+                txt.textContent = 'Denied — see instructions below';
+                warn.style.display = 'block';
+            } else if (perm === 'default') {
+                dot.classList.add('default');
+                txt.textContent = 'Not yet requested';
+                btn.style.display = '';
+            } else {
+                dot.classList.add('denied');
+                txt.textContent = 'Notifications not supported in this browser';
+            }
+        }
+
+        function requestPermission() {
+            if (!('Notification' in window)) {
+                alert('This browser does not support notifications.');
+                return;
+            }
+            Notification.requestPermission().then(p => {
+                updatePermissionUI();
+                if (p === 'granted') {
+                    logEvent('info', 'Notification permission granted');
+                } else if (p === 'denied') {
+                    logEvent('error', 'Notification permission denied by user');
+                }
+            });
+        }
+
+        function checkPermission() {
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                logEvent('error', 'Permission not granted — click "Request Permission" first');
+                alert('Please grant notification permission first.');
+                return false;
+            }
+            return true;
+        }
+
+        // ─── Build options from form ──────────────────────────────────────────────
+        function buildOptions() {
+            const opts = {
+                dir:                 document.getElementById('ntfDir').value,
+                requireInteraction:  document.getElementById('ntfRequireInteraction').checked,
+                silent:              document.getElementById('ntfSilent').checked,
+                renotify:            document.getElementById('ntfRenotify').checked,
+                timestamp:           Date.now()
+            };
+
+            const body  = document.getElementById('ntfBody').value.trim();
+            const icon  = document.getElementById('ntfIcon').value.trim();
+            const badge = document.getElementById('ntfBadge').value.trim();
+            const image = document.getElementById('ntfImage').value.trim();
+            const tag   = document.getElementById('ntfTag').value.trim();
+
+            if (body)  opts.body  = body;
+            if (icon)  opts.icon  = icon;
+            if (badge) opts.badge = badge;
+            if (image) opts.image = image;
+            if (tag)   opts.tag   = tag;
+
+            const vib = document.getElementById('ntfVibrate').value.trim();
+            if (vib) {
+                const pat = vib.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 0);
+                if (pat.length) opts.vibrate = pat;
+            }
+
+            const a1l = document.getElementById('ntfA1Label').value.trim();
+            const a2l = document.getElementById('ntfA2Label').value.trim();
+            const actions = [];
+            if (a1l) actions.push({ action: document.getElementById('ntfA1Id').value.trim() || 'action1', title: a1l });
+            if (a2l) actions.push({ action: document.getElementById('ntfA2Id').value.trim() || 'action2', title: a2l });
+            if (actions.length) opts.actions = actions;
+
+            return opts;
+        }
+
+        // ─── Fire ────────────────────────────────────────────────────────────────
+        function fireNotification() {
+            const title    = document.getElementById('ntfTitle').value.trim() || 'Aquatic Nature Discovery';
+            const clickUrl = document.getElementById('ntfClickUrl').value.trim();
+            const opts     = buildOptions();
+
+            try {
+                const n = new Notification(title, opts);
+                n.addEventListener('show',  () => logEvent('show',  `"${title}" displayed`));
+                n.addEventListener('click', () => {
+                    logEvent('click', 'User clicked the notification');
+                    if (clickUrl) window.open(clickUrl, '_blank');
+                    n.close();
+                });
+                n.addEventListener('close', () => logEvent('close', 'Notification closed'));
+                n.addEventListener('error', e  => logEvent('error', `Error: ${e.message || 'unknown'}`));
+            } catch (err) {
+                logEvent('error', `Failed to create notification: ${err.message}`);
+            }
+        }
+
+        // ─── Schedule ────────────────────────────────────────────────────────────
+        let schedule = { timeout: null, interval: null, btnId: null, label: null };
+
+        function cancelSchedule() {
+            clearTimeout(schedule.timeout);
+            clearInterval(schedule.interval);
+            if (schedule.btnId) {
+                const btn = document.getElementById(schedule.btnId);
+                if (btn) { btn.classList.remove('counting'); btn.textContent = schedule.label; }
+            }
+            schedule = { timeout: null, interval: null, btnId: null, label: null };
+        }
+
+        function startSchedule(seconds, btnId, label) {
+            if (!checkPermission()) return;
+            cancelSchedule();
+
+            const btn = document.getElementById(btnId);
+            schedule  = { timeout: null, interval: null, btnId, label };
+
+            let rem = seconds;
+            btn.classList.add('counting');
+            btn.textContent = `Cancel (${rem}s)`;
+            logEvent('sched', `Notification scheduled in ${seconds}s — click again to cancel`);
+
+            schedule.interval = setInterval(() => {
+                rem--;
+                btn.textContent = `Cancel (${rem}s)`;
+                if (rem <= 0) clearInterval(schedule.interval);
+            }, 1000);
+
+            schedule.timeout = setTimeout(() => {
+                cancelSchedule();
+                fireNotification();
+            }, seconds * 1000);
+        }
+
+        function sendNow() {
+            if (!checkPermission()) return;
+            cancelSchedule();
+            fireNotification();
+        }
+
+        function toggleSchedule(seconds, btnId, label) {
+            if (schedule.btnId === btnId) { cancelSchedule(); logEvent('info', 'Schedule cancelled'); return; }
+            startSchedule(seconds, btnId, label);
+        }
+
+        function toggleCustomSchedule() {
+            if (schedule.btnId === 'sendCustomBtn') { cancelSchedule(); logEvent('info', 'Schedule cancelled'); return; }
+            const sec = parseInt(document.getElementById('customDelay').value);
+            if (!sec || sec < 1) { alert('Enter a valid delay in seconds.'); return; }
+            startSchedule(sec, 'sendCustomBtn', 'Custom delay');
+        }
+
+        // ─── Live preview ────────────────────────────────────────────────────────
+        function updatePreview() {
+            const title = document.getElementById('ntfTitle').value.trim() || 'Aquatic Nature Discovery';
+            const body  = document.getElementById('ntfBody').value.trim();
+
+            document.getElementById('pvTitle').textContent = title;
+
+            const pvBody = document.getElementById('pvBody');
+            pvBody.textContent = body || 'No body text';
+            pvBody.style.opacity = body ? '1' : '0.4';
+
+            // Actions
+            const a1 = document.getElementById('ntfA1Label').value.trim();
+            const a2 = document.getElementById('ntfA2Label').value.trim();
+            const pvActions = document.getElementById('pvActions');
+            if (a1 || a2) {
+                pvActions.style.display = 'flex';
+                pvActions.innerHTML =
+                    (a1 ? `<span class="notif-action-chip">${esc(a1)}</span>` : '') +
+                    (a2 ? `<span class="notif-action-chip">${esc(a2)}</span>` : '');
+            } else {
+                pvActions.style.display = 'none';
+            }
+        }
+
+        function onIconChange() {
+            const url       = document.getElementById('ntfIcon').value.trim();
+            const thumb     = document.getElementById('iconThumb');
+            const pvImg     = document.getElementById('pvIconImg');
+            const pvEmoji   = document.getElementById('pvIconEmoji');
+
+            if (url) {
+                thumb.src   = url;
+                thumb.style.display = 'block';
+                thumb.onerror = () => { thumb.style.display = 'none'; };
+
+                pvImg.src   = url;
+                pvImg.style.display   = 'block';
+                pvEmoji.style.display = 'none';
+                pvImg.onerror = () => { pvImg.style.display = 'none'; pvEmoji.style.display = 'block'; };
+            } else {
+                thumb.style.display   = 'none';
+                pvImg.style.display   = 'none';
+                pvEmoji.style.display = 'block';
+            }
+        }
+
+        function onImageChange() {
+            const url     = document.getElementById('ntfImage').value.trim();
+            const wrap    = document.getElementById('imagePreviewWrap');
+            const preview = document.getElementById('imagePreview');
+            const pvWrap  = document.getElementById('pvImageWrap');
+            const pvImg   = document.getElementById('pvImage');
+
+            if (url) {
+                wrap.style.display   = 'block';
+                pvWrap.style.display = 'block';
+                preview.src = pvImg.src = url;
+                const hide = () => { wrap.style.display = pvWrap.style.display = 'none'; };
+                preview.onerror = pvImg.onerror = hide;
+            } else {
+                wrap.style.display = pvWrap.style.display = 'none';
+            }
+        }
+
+        // ─── Templates ───────────────────────────────────────────────────────────
+        const TEMPLATES = {
+            welcome: {
+                title: 'Welcome to Aquatic Nature Discovery! 🐠',
+                body:  "We're open today 9 AM – 6 PM. Explore 500+ species across 15 immersive exhibits.",
+                icon:  'images/and-logo.png',
+                tag:   'welcome'
+            },
+            event: {
+                title: 'Shark Feeding Show – Starting at 3 PM 🦈',
+                body:  'Head to the main tank gallery now for our spectacular shark feeding. Limited viewing spots!',
+                icon:  'images/and-logo.png',
+                tag:   'event-feeding',
+                requireInteraction: true
+            },
+            emergency: {
+                title: '⚠️ Important Visitor Notice',
+                body:  'The Deep Sea exhibit is temporarily closed for maintenance. We apologise for the inconvenience.',
+                icon:  'images/and-logo.png',
+                tag:   'notice',
+                requireInteraction: true
+            },
+            exhibit: {
+                title: 'New Exhibit Now Open! 🪸',
+                body:  'Discover our stunning new Coral Reef exhibit — 200+ species of tropical fish and live coral.',
+                icon:  'images/and-logo.png',
+                tag:   'new-exhibit'
+            },
+            closing: {
+                title: 'Closing in 30 Minutes ⏰',
+                body:  "The aquarium closes at 6 PM today. Don't forget to visit the gift shop!",
+                icon:  'images/and-logo.png',
+                tag:   'closing'
+            },
+            offer: {
+                title: 'Members Save 20% This Weekend 🎟️',
+                body:  'Upgrade to Premium Membership and get 20% off plus exclusive behind-the-scenes access.',
+                icon:  'images/and-logo.png',
+                tag:   'offer'
+            }
+        };
+
+        function applyTemplate(name) {
+            const t = TEMPLATES[name];
+            if (!t) return;
+
+            document.getElementById('ntfTitle').value      = t.title || '';
+            document.getElementById('ntfBody').value       = t.body  || '';
+            document.getElementById('ntfIcon').value       = t.icon  || '';
+            document.getElementById('ntfImage').value      = t.image || '';
+            document.getElementById('ntfBadge').value      = t.badge || '';
+            document.getElementById('ntfTag').value        = t.tag   || '';
+            document.getElementById('ntfClickUrl').value   = t.clickUrl || '';
+            document.getElementById('ntfVibrate').value    = t.vibrate  || '';
+            document.getElementById('ntfA1Label').value    = t.a1Label  || '';
+            document.getElementById('ntfA1Id').value       = t.a1Id     || '';
+            document.getElementById('ntfA2Label').value    = t.a2Label  || '';
+            document.getElementById('ntfA2Id').value       = t.a2Id     || '';
+            document.getElementById('ntfRequireInteraction').checked = t.requireInteraction || false;
+            document.getElementById('ntfSilent').checked             = t.silent  || false;
+            document.getElementById('ntfRenotify').checked           = t.renotify || false;
+            document.getElementById('ntfDir').value = t.dir || 'auto';
+
+            onIconChange();
+            onImageChange();
+            updatePreview();
+            logEvent('info', `Template applied: ${name}`);
+        }
+
+        // ─── Event log ───────────────────────────────────────────────────────────
+        const LOG_CLASS = {
+            show: 'log-show', click: 'log-click', close: 'log-close',
+            error: 'log-error', info: 'log-info', sched: 'log-sched'
+        };
+
+        function logEvent(type, message) {
+            const log   = document.getElementById('eventLog');
+            const empty = document.getElementById('logEmpty');
+            if (empty) empty.remove();
+
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const cls  = LOG_CLASS[type] || 'log-info';
+
+            const el = document.createElement('div');
+            el.className = 'log-entry';
+            el.innerHTML = `<span class="log-t">[${time}]</span> <span class="${cls}">[${type.toUpperCase()}]</span> ${esc(message)}`;
+            log.appendChild(el);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML =
+                '<div class="log-empty" id="logEmpty">No events yet. Send a notification to begin.</div>';
+        }
+
+        // ─── Search ──────────────────────────────────────────────────────────────
+        function performSearch(e) {
+            e.preventDefault();
+            const q = document.getElementById('searchInput').value.trim();
+            if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+        }
+
+        // ─── Offline ─────────────────────────────────────────────────────────────
+        function updateOnlineStatus() {
+            document.getElementById('offlineIndicator').classList
+                .toggle('visible', !navigator.onLine);
+        }
+
+        window.addEventListener('online',  updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // ─── Init ────────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus();
+            updatePermissionUI();
+            updateOnlineStatus();
+
+            // Pre-fill icon with site logo
+            document.getElementById('ntfIcon').value = 'images/and-logo.png';
+            onIconChange();
+
+            // Show actual origin in preview header
+            document.getElementById('pvOrigin').textContent = window.location.host || 'localhost';
+            updatePreview();
+
+            logEvent('info', 'Notification Builder ready');
+        });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
+</body>
+</html>
