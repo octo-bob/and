@@ -298,27 +298,9 @@
             color: #666;
         }
 
-        .offline-indicator {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: #dc3545;
-            color: white;
-            text-align: center;
-            padding: 8px;
-            font-size: 0.9rem;
-            z-index: 9999;
-        }
-
-        .offline-indicator.visible {
-            display: block;
-        }
     </style>
 </head>
 <body>
-    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
     <header>
         <a class="logo-container" href="index.html">
             <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
@@ -640,25 +622,12 @@
             }
         }
 
-        // Offline detection
-        function updateOnlineStatus() {
-            const indicator = document.getElementById('offlineIndicator');
-            if (!navigator.onLine) {
-                indicator.classList.add('visible');
-            } else {
-                indicator.classList.remove('visible');
-            }
-        }
-
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             renderProducts();
             loadCart();
             displayRecentlyViewed();
-            updateOnlineStatus();
 
             // Track page visit
             setItem('lastGiftShopVisit', new Date().toISOString());

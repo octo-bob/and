@@ -482,8 +482,6 @@
     </style>
 </head>
 <body>
-    <div id="offlineIndicator" class="offline-indicator">You are currently offline. Some features may be unavailable.</div>
-
     <header>
         <a class="logo-container" href="index.html">
             <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
@@ -1119,20 +1117,11 @@
             if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
         }
 
-        // ─── Offline ─────────────────────────────────────────────────────────────
-        function updateOnlineStatus() {
-            document.getElementById('offlineIndicator').classList
-                .toggle('visible', !navigator.onLine);
-        }
-
-        window.addEventListener('online',  updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
 
         // ─── Init ────────────────────────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', () => {
             checkLoginStatus();
             updatePermissionUI();
-            updateOnlineStatus();
 
             // Pre-fill icon with site logo
             document.getElementById('ntfIcon').value = 'images/and-logo.png';
