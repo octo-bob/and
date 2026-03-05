@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Page Not Found - Aquatic Nature Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .error-container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .error-number {
+            font-size: 8rem;
+            font-weight: 900;
+            color: #0066cc;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            letter-spacing: -4px;
+        }
+
+        .fish-scene {
+            font-size: 4rem;
+            margin: 1.5rem 0;
+            position: relative;
+            height: 80px;
+            overflow: hidden;
+        }
+
+        .fish {
+            display: inline-block;
+            animation: swim 4s ease-in-out infinite;
+        }
+
+        .bubbles {
+            display: inline-block;
+            font-size: 1.5rem;
+            animation: float 3s ease-in-out infinite 0.8s;
+            vertical-align: middle;
+        }
+
+        @keyframes swim {
+            0%, 100% { transform: translateX(-12px) rotate(-3deg); }
+            50%       { transform: translateX(12px)  rotate(3deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); opacity: 0.8; }
+            50%       { transform: translateY(-8px); opacity: 1; }
+        }
+
+        .error-container h2 {
+            color: #0066cc;
+            font-size: 1.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .error-container p {
+            color: #555;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 1.25rem;
+        }
+
+        .requested-path {
+            display: inline-block;
+            background: #f0f4f8;
+            border: 1px solid #d0d9e3;
+            border-radius: 6px;
+            padding: 0.4rem 0.9rem;
+            font-family: monospace;
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 2rem;
+            word-break: break-all;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .btn-home {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.85rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-home:hover {
+            background: #0055b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: transparent;
+            color: #0066cc;
+            border: 2px solid #0066cc;
+            padding: 0.85rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            background: #e6f0fb;
+            transform: translateY(-2px);
+        }
+
+        .explore-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.75rem 2rem;
+            text-align: left;
+        }
+
+        .explore-section h3 {
+            color: #0066cc;
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.95rem;
+            transition: background 0.15s;
+        }
+
+        .page-link:hover {
+            background: #e6f0fb;
+            color: #0066cc;
+        }
+
+        @media (max-width: 480px) {
+            .error-number { font-size: 6rem; }
+            .page-grid    { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a class="logo-container" href="index.html">
+            <img src="images/and-logo.png" alt="Aquatic Nature Discovery Logo" class="logo">
+            <h1>Aquatic Nature Discovery</h1>
+        </a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="exhibits.html">Exhibits</a>
+            <a href="conservation.html">Conservation</a>
+            <a href="visit.html">Visit</a>
+            <a href="support.html">Support Us</a>
+            <a href="education.html">Education</a>
+            <a href="events.html">Events</a>
+        </nav>
+    </header>
+
+    <div class="error-container">
+        <div class="error-number">404</div>
+
+        <div class="fish-scene">
+            <span class="fish">🐟</span>
+            <span class="bubbles">🫧</span>
+        </div>
+
+        <h2>This page swam away</h2>
+        <p>We couldn't find what you were looking for. It may have been moved, renamed, or it never existed in our waters.</p>
+
+        <div id="requestedPath" style="display:none;">
+            <p style="margin-bottom:0.5rem; color:#777; font-size:0.9rem;">You were looking for:</p>
+            <span class="requested-path" id="pathDisplay"></span>
+        </div>
+
+        <div class="action-row">
+            <a href="index.html" class="btn-home">🏠 Back to Home</a>
+            <button class="btn-back" onclick="history.length > 1 ? history.back() : window.location='index.html'">← Go Back</button>
+        </div>
+
+        <div class="explore-section">
+            <h3>Explore our waters</h3>
+            <div class="page-grid">
+                <a href="exhibits.html"     class="page-link">🐠 Exhibits</a>
+                <a href="visit.html"        class="page-link">📍 Plan Your Visit</a>
+                <a href="conservation.html" class="page-link">🌿 Conservation</a>
+                <a href="education.html"    class="page-link">🎓 Education</a>
+                <a href="events.html"       class="page-link">📅 Events</a>
+                <a href="giftshop.html"     class="page-link">🛍️ Gift Shop</a>
+                <a href="membership.html"   class="page-link">⭐ Membership</a>
+                <a href="support.html"      class="page-link">💙 Support Us</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
+    </footer>
+
+    <script>
+        const path = window.location.pathname;
+        if (path && path !== '/404.html') {
+            document.getElementById('pathDisplay').textContent = path;
+            document.getElementById('requestedPath').style.display = 'block';
+        }
+    </script>
+    <script src="scripts/dark-mode.js"></script>
+    <script src="scripts/session-tracker.js"></script>
+</body>
+</html>

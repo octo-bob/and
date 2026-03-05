@@ -21,6 +21,7 @@ const STATIC_ASSETS = [
     '/membership.html',
     '/trip-planner.html',
     '/offline.html',
+    '/404.html',
     '/images/and-logo.png',
     '/scripts/sqlite-worker.js'
 ];
