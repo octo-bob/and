@@ -63,6 +63,17 @@
         .status-dot.denied  { background: #dc3545; box-shadow: 0 0 0 3px rgba(220,53,69,0.2); }
         .status-dot.default { background: #ffc107; box-shadow: 0 0 0 3px rgba(255,193,7,0.2); }
 
+        .context-hint {
+            background: #e6f0fb;
+            border: 1px solid #b8d4f5;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: #1a4a7a;
+            margin-top: 0.75rem;
+            line-height: 1.5;
+        }
+
         .denied-warning {
             background: #fff3cd;
             border: 1px solid #ffc107;
@@ -542,6 +553,7 @@
                         Permission was denied. To reset: open browser Settings → Privacy &amp; Security →
                         Site Settings → Notifications → find this origin → Reset to default.
                     </div>
+                    <div class="context-hint" id="contextHint" style="display:none;"></div>
                 </div>
 
                 <!-- Builder -->
@@ -790,9 +802,17 @@
             const txt  = document.getElementById('statusText');
             const btn  = document.getElementById('requestPermBtn');
             const warn = document.getElementById('deniedWarning');
+            const hint = document.getElementById('contextHint');
+
+            const isMac      = /macintosh|mac os x/i.test(navigator.userAgent);
+            const isSafari   = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            const isFileProto = location.protocol === 'file:';
+            const isInsecure  = !['https:', 'file:'].includes(location.protocol) &&
+                                !['localhost', '127.0.0.1'].includes(location.hostname);
 
             dot.className = 'status-dot';
             warn.style.display = 'none';
+            hint.style.display = 'none';
             btn.style.display  = 'none';
 
             if (perm === 'granted') {
@@ -809,6 +829,28 @@
             } else {
                 dot.classList.add('denied');
                 txt.textContent = 'Notifications not supported in this browser';
+            }
+
+            // Surface silent failure modes
+            const hints = [];
+
+            if (isFileProto) {
+                hints.push('⚠️ <strong>file:// protocol detected.</strong> Most browsers block notifications on local files. Serve the site from a local server (e.g. <code>npx serve .</code> or VS Code Live Server) and open it via <code>http://localhost</code>.');
+            } else if (isInsecure) {
+                hints.push('⚠️ <strong>Insecure origin (HTTP).</strong> Browsers require HTTPS or localhost for notifications. Notifications will be silently blocked.');
+            }
+
+            if (isSafari) {
+                hints.push('🍎 <strong>Safari detected.</strong> Safari requires HTTPS. Notifications are only supported on macOS 13+ with a properly served HTTPS site or an installed Web App.');
+            }
+
+            if (isMac && perm === 'granted' && !isSafari) {
+                hints.push('🍎 <strong>macOS note:</strong> Even when the browser grants permission, macOS can block notifications at the system level. Check <strong>System Settings → Notifications → ' + (navigator.userAgent.includes('Edg') ? 'Microsoft Edge' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Google Chrome') + '</strong> and make sure notifications are allowed. Also check that Focus/Do Not Disturb is off.');
+            }
+
+            if (hints.length) {
+                hint.innerHTML = hints.join('<br><br>');
+                hint.style.display = 'block';
             }
         }
 
@@ -875,16 +917,57 @@
         }
 
         // ─── Fire ────────────────────────────────────────────────────────────────
-        function fireNotification() {
+        async function getActiveSWReg() {
+            if (!('serviceWorker' in navigator)) return null;
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (!reg) return null;
+            if (reg.active) return reg;
+            // SW is installing or waiting — give it up to 5s to activate
+            return new Promise(resolve => {
+                const worker = reg.installing || reg.waiting;
+                if (!worker) { resolve(null); return; }
+                const timer = setTimeout(() => resolve(null), 5000);
+                worker.addEventListener('statechange', function handler() {
+                    if (this.state === 'activated') {
+                        clearTimeout(timer);
+                        worker.removeEventListener('statechange', handler);
+                        resolve(reg);
+                    } else if (this.state === 'redundant') {
+                        clearTimeout(timer);
+                        worker.removeEventListener('statechange', handler);
+                        resolve(null);
+                    }
+                });
+            });
+        }
+
+        async function fireNotification() {
             const title    = document.getElementById('ntfTitle').value.trim() || 'Aquatic Nature Discovery';
             const clickUrl = document.getElementById('ntfClickUrl').value.trim();
             const opts     = buildOptions();
 
+            // SW path: supports actions, writes to Chrome notification DB, works on mobile
+            const reg = await getActiveSWReg();
+            if (reg) {
+                try {
+                    opts.data = { clickUrl };
+                    await reg.showNotification(title, opts);
+                    logEvent('show', `"${title}" displayed`);
+                    return;
+                } catch (err) {
+                    logEvent('info', `SW showNotification failed (${err.message}) — falling back`);
+                }
+            }
+
+            // Fallback: new Notification() — action buttons will be silently ignored
             try {
+                if (opts.actions?.length) {
+                    logEvent('info', 'Action buttons require a service worker and will be ignored in fallback mode');
+                }
                 const n = new Notification(title, opts);
                 n.addEventListener('show',  () => logEvent('show',  `"${title}" displayed`));
                 n.addEventListener('click', () => {
-                    logEvent('click', 'User clicked the notification');
+                    logEvent('click', 'Notification clicked');
                     if (clickUrl) window.open(clickUrl, '_blank');
                     n.close();
                 });
@@ -1135,7 +1218,35 @@
         });
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(() => {});
+            // Use relative path so it works on both root domains and GitHub Pages subpaths
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => {
+                    // If a new SW is already waiting (e.g. just deployed), activate it now
+                    if (reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                    reg.addEventListener('updatefound', () => {
+                        const sw = reg.installing;
+                        sw.addEventListener('statechange', () => {
+                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                sw.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
+                    });
+                })
+                .catch(err => logEvent('info', `SW registration failed: ${err.message}`));
+
+            // Relay click/close events back from the SW into the event log
+            navigator.serviceWorker.addEventListener('message', event => {
+                const { type, action, title } = event.data || {};
+                if (type === 'notification_click') {
+                    logEvent('click', action
+                        ? `Action "${action}" clicked on "${title}"`
+                        : `"${title}" clicked`);
+                } else if (type === 'notification_close') {
+                    logEvent('close', `"${title}" closed`);
+                }
+            });
         }
     </script>
     <script src="scripts/dark-mode.js"></script>

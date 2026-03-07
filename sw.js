@@ -27,15 +27,16 @@ const STATIC_ASSETS = [
 ];
 
 // Install event - cache static assets
+// Each asset is cached individually so one bad URL doesn't abort the whole install
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(STATIC_CACHE)
-            .then((cache) => {
-                return cache.addAll(STATIC_ASSETS);
-            })
-            .then(() => {
-                return self.skipWaiting();
-            })
+            .then(cache => Promise.all(
+                STATIC_ASSETS.map(url =>
+                    cache.add(url).catch(err => console.warn(`SW: failed to cache ${url}:`, err))
+                )
+            ))
+            .then(() => self.skipWaiting())
     );
 });
 
@@ -163,6 +164,43 @@ async function handleDynamicRequest(request) {
         return new Response('Offline', { status: 503 });
     }
 }
+
+// Notification click — close it and relay event back to the page
+self.addEventListener('notificationclick', (event) => {
+    const data = event.notification.data || {};
+    event.notification.close();
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+            clients.forEach(client => client.postMessage({
+                type: 'notification_click',
+                action: event.action || null,
+                tag:    event.notification.tag,
+                title:  event.notification.title
+            }));
+            if (data.clickUrl) {
+                const url      = data.clickUrl.startsWith('http') ? data.clickUrl
+                               : self.registration.scope + data.clickUrl.replace(/^\//, '');
+                const existing = clients.find(c => c.url === url && 'focus' in c);
+                if (existing) return existing.focus();
+                if (self.clients.openWindow) return self.clients.openWindow(url);
+            }
+        })
+    );
+});
+
+// Notification close — relay back to the page
+self.addEventListener('notificationclose', (event) => {
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+            clients.forEach(client => client.postMessage({
+                type:  'notification_close',
+                tag:   event.notification.tag,
+                title: event.notification.title
+            }));
+        })
+    );
+});
 
 // Message handler for cache operations
 self.addEventListener('message', (event) => {
