@@ -438,6 +438,23 @@
         let currentResults = [];
         let currentQuery = "";
 
+        // Escape text before it is interpolated into innerHTML.
+        // The query comes straight from the ?q= parameter, so it is attacker-controlled.
+        function escapeHTML(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Escape text before it is used to build a RegExp.
+        // Without this, a query containing ( [ * \ throws and blanks the results.
+        function escapeRegExp(text) {
+            return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
         // Get search query from URL parameters
         function getSearchQueryFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -511,7 +528,7 @@
             if (currentResults.length === 0) {
                 resultsContainer.innerHTML = `
                     <div class="no-results">
-                        <h3>No results found for "${currentQuery}"</h3>
+                        <h3>No results found for "${escapeHTML(currentQuery)}"</h3>
                         <p>Try different keywords or check your spelling.</p>
                         <p>You can also browse our main sections:</p>
                         <ul style="text-align: left; display: inline-block;">
@@ -524,7 +541,7 @@
                 `;
                 statsContainer.innerHTML = '';
             } else {
-                statsContainer.innerHTML = `Found ${currentResults.length} result${currentResults.length === 1 ? '' : 's'} for "${currentQuery}"`;
+                statsContainer.innerHTML = `Found ${currentResults.length} result${currentResults.length === 1 ? '' : 's'} for "${escapeHTML(currentQuery)}"`;
                 
                 let resultsHTML = '';
                 currentResults.forEach(item => {
@@ -547,17 +564,24 @@
 
         // Highlight search terms in text
         function highlightText(text, query) {
-            if (!query) return text;
-            
+            const safeText = escapeHTML(text);
+            if (!query) return safeText;
+
             const searchTerms = query.split(' ').filter(term => term.length > 0);
-            let highlightedText = text;
-            
-            searchTerms.forEach(term => {
-                const regex = new RegExp(`(${term})`, 'gi');
-                highlightedText = highlightedText.replace(regex, '<span class="highlight">$1</span>');
-            });
-            
-            return highlightedText;
+            if (searchTerms.length === 0) return safeText;
+
+            // Terms are escaped the same way as the text so they still match it,
+            // then regex-escaped so punctuation cannot alter the pattern.
+            const pattern = searchTerms
+                .map(term => escapeRegExp(escapeHTML(term)))
+                .join('|');
+
+            // One pass over the text: sequential replaces would let a later term
+            // match inside the <span> markup inserted by an earlier one.
+            return safeText.replace(
+                new RegExp(`(${pattern})`, 'gi'),
+                '<span class="highlight">$1</span>'
+            );
         }
 
         // Get display name for category
@@ -657,7 +681,7 @@
 
             let suggestionsHTML = '';
             suggestions.forEach(suggestion => {
-                suggestionsHTML += `<div class="suggestion-item" onclick="selectSuggestion('${suggestion}')">${suggestion}</div>`;
+                suggestionsHTML += `<div class="suggestion-item" data-suggestion="${escapeHTML(suggestion)}">${escapeHTML(suggestion)}</div>`;
             });
 
             suggestionsContainer.innerHTML = suggestionsHTML;
@@ -707,6 +731,15 @@
             // Add input event listener for suggestions
             document.getElementById('searchQuery').addEventListener('input', function() {
                 showSearchSuggestions(this.value);
+            });
+
+            // Suggestions are click-handled here rather than with an inline onclick,
+            // so the suggestion text is never parsed as JavaScript.
+            document.getElementById('searchSuggestions').addEventListener('click', function(event) {
+                const item = event.target.closest('.suggestion-item');
+                if (item) {
+                    selectSuggestion(item.dataset.suggestion);
+                }
             });
         });
     </script>
