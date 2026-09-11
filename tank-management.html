@@ -57,6 +57,181 @@
             overflow-y: auto;
         }
 
+        .hid-banner {
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .hid-banner-ok {
+            background-color: #e6f3ff;
+            border-left: 4px solid #0066cc;
+        }
+
+        .hid-banner-warn {
+            background-color: #fff6e6;
+            border-left: 4px solid #e09900;
+        }
+
+        .hid-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .hid-toolbar button {
+            background-color: #f1f3f5;
+            color: #333;
+            border: 1px solid #ced4da;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .hid-toolbar button:hover {
+            background-color: #e3e6ea;
+        }
+
+        .hid-device-card {
+            border: 1px solid #dee2e6;
+            border-left: 4px solid #0066cc;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #fff;
+        }
+
+        .hid-device-card h4 {
+            color: #0066cc;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .hid-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .hid-table th {
+            text-align: left;
+            width: 11rem;
+            padding: 0.3rem 0.5rem 0.3rem 0;
+            color: #555;
+            font-weight: 600;
+            vertical-align: top;
+        }
+
+        .hid-table td {
+            padding: 0.3rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .hid-descriptor {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .hid-device-card details summary {
+            cursor: pointer;
+            margin-top: 0.75rem;
+            color: #0066cc;
+            font-size: 0.9rem;
+        }
+
+        .hid-timeline-list {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-left: 1.5rem;
+        }
+
+        .hid-timeline-list li {
+            padding: 0.2rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .hid-event-time {
+            color: #666;
+            margin-right: 0.75rem;
+        }
+
+        .hid-event-type {
+            display: inline-block;
+            min-width: 10rem;
+            color: #0066cc;
+            font-weight: 600;
+        }
+
+        .hid-event-device {
+            color: #333;
+        }
+
+        .hid-event-note {
+            color: #c0392b;
+            margin-left: 0.75rem;
+        }
+
+        .hid-storage-note {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .hid-storage-note code {
+            background-color: #f1f3f5;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+        }
+
+        .login-required {
+            text-align: center;
+            padding: 3rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+
+        .login-required h3 {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .login-required p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-button {
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #0055b3;
+        }
+
+        .device-button:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+        }
+
         .info-text {
             color: #666;
             line-height: 1.6;
@@ -158,7 +333,7 @@
         <p>Monitor and control aquarium systems with Arduino-based sensors and controllers.</p>
     </section>
 
-    <div class="tank-container">
+    <div class="tank-container" id="tankContent" style="display: none;">
         <div class="status-panel">
             <h3>System Status</h3>
             <p class="info-text">
@@ -210,7 +385,80 @@
             <button id="requestDeviceButton" class="device-button">
                 Connect Arduino Device
             </button>
+            <div id="hidSupport" class="hid-banner hid-banner-warn">
+                Checking for WebHID support...
+            </div>
             <div id="log"></div>
+        </div>
+
+        <div class="tank-section">
+            <h2>Device Record</h2>
+            <p class="info-text">
+                Every device this page has been able to see is recorded below and kept
+                across visits. <span id="hidDeviceCount">No devices recorded yet.</span>
+            </p>
+            <div class="hid-toolbar">
+                <button id="hidExportJSON" type="button">Download JSON</button>
+                <button id="hidExportCSV" type="button">Download CSV</button>
+                <button id="hidCopyJSON" type="button">Copy to clipboard</button>
+                <button id="hidClearRecord" type="button">Clear site record</button>
+            </div>
+            <div id="hidRegistry"></div>
+        </div>
+
+        <div class="tank-section">
+            <h2>Device Event Timeline</h2>
+            <p class="info-text">
+                Newest first. Connect and disconnect entries are physical plug events,
+                and they are only reported for devices that already have permission.
+            </p>
+            <div id="hidTimeline"></div>
+        </div>
+
+        <div class="tank-section">
+            <h2>Where This Record Lives</h2>
+            <p class="hid-storage-note">
+                The page writes three separate records, each with different survival
+                characteristics:
+            </p>
+            <ul class="hid-storage-note">
+                <li><code>hidDeviceRegistry</code> in localStorage: one entry per distinct
+                    device, with first seen, last seen, a sighting count, and the full
+                    report descriptor. Survives browser restarts.</li>
+                <li><code>hidDeviceEvents</code> in localStorage: a capped timeline of
+                    sightings, grants, and plug events. Survives browser restarts.</li>
+                <li><code>connectedDevices</code> in sessionStorage: sightings for this tab
+                    only, discarded when the tab closes.</li>
+            </ul>
+            <p class="hid-storage-note">
+                A fourth record is kept by the browser itself, not by this page. When a
+                device is granted, the browser stores that permission in its own profile
+                so that the grant survives a reload. That is why devices can appear in the
+                record above with no user action on this visit. Clearing the site record
+                with the button above does not revoke the browser's grant, and revoking the
+                permission in browser settings does not erase the site record. The two are
+                independent, and they can disagree.
+            </p>
+            <p class="hid-storage-note">
+                <strong>Limitation worth noting:</strong> WebHID cannot enumerate attached
+                devices. The chooser dialog sees every connected HID device, but the page
+                only ever learns about the ones already granted plus the ones picked.
+                WebHID also exposes no serial number and no manufacturer string, so two
+                identical models cannot be told apart here.
+            </p>
+            <p class="hid-storage-note">
+                The <a href="usb-devices.html">USB Device Survey</a> keeps the same kind of
+                record over WebUSB, which does report a manufacturer name and a serial
+                number. Surveying one physical device through both pages shows how much the
+                choice of API changes what a site can learn about it.
+            </p>
+            <p class="hid-storage-note">
+                <strong>Access note:</strong> the check guarding this page reads a flag out
+                of localStorage in the browser. It keeps the page tidy for visitors, and it
+                is not a security boundary. Anyone who can open developer tools can set that
+                flag. Compare what the gate actually prevents against what it appears to
+                prevent.
+            </p>
         </div>
 
         <div class="tank-section">
@@ -266,11 +514,42 @@
         </div>
     </div>
 
+    <div class="login-required" id="loginRequired">
+        <h3>🔒 Access Restricted</h3>
+        <p>The tank management system controls live aquarium equipment and requires employee authentication. Please log in to access sensor data and device controls.</p>
+        <a href="login.html" class="login-button">Employee Login</a>
+    </div>
+
     <footer>
         <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
     </footer>
 
     <script>
+        // Check if user is logged in (simple session check)
+        function checkLoginStatus() {
+            // In a real application, this would check for a valid session token
+            // For demo purposes, we'll use localStorage to simulate a session
+            const isLoggedIn = localStorage.getItem('employeeLoggedIn') === 'true';
+
+            document.getElementById('tankContent').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('loginRequired').style.display = isLoggedIn ? 'none' : 'block';
+
+            // Device enumeration is held back until the check passes, so a locked
+            // page does not quietly talk to WebHID behind the notice.
+            if (isLoggedIn && window.hidRecord) {
+                window.hidRecord.start();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkLoginStatus);
+
+        // Auto-refresh login status every 30 seconds
+        setInterval(checkLoginStatus, 30000);
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
     </script>
     <script src="scripts/dark-mode.js"></script>
     <script src="scripts/session-tracker.js"></script>

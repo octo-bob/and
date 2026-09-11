@@ -1,9 +1,12 @@
 // Service Worker for Aquatic Nature Discovery
 // Implements Cache API for offline support
 
-const STATIC_CACHE = 'aquarium-static-v3';
-const DYNAMIC_CACHE = 'aquarium-dynamic-v3';
-const IMAGE_CACHE = 'aquarium-images-v3';
+// Bumped to v4 so the newly added static assets are fetched fresh. Static
+// requests are served cache-first, so reusing v3 could pin the older copies
+// of tank-management.html and scripts/webhid.js that are already cached.
+const STATIC_CACHE = 'aquarium-static-v4';
+const DYNAMIC_CACHE = 'aquarium-dynamic-v4';
+const IMAGE_CACHE = 'aquarium-images-v4';
 
 // Assets to cache immediately on install
 const STATIC_ASSETS = [
@@ -11,6 +14,7 @@ const STATIC_ASSETS = [
     '/index.html',
     '/style.css',
     '/scripts/dark-mode.js',
+    '/scripts/session-tracker.js',
     '/exhibits.html',
     '/visit.html',
     '/support.html',
@@ -23,7 +27,11 @@ const STATIC_ASSETS = [
     '/offline.html',
     '/404.html',
     '/images/and-logo.png',
-    '/scripts/sqlite-worker.js'
+    '/scripts/sqlite-worker.js',
+    '/tank-management.html',
+    '/scripts/webhid.js',
+    '/usb-devices.html',
+    '/scripts/webusb.js'
 ];
 
 // Install event - cache static assets
