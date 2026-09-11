@@ -95,6 +95,12 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
+        .equipment-search-stats {
+            margin-top: 1rem;
+            color: #666;
+            font-style: italic;
+        }
+
         .inventory-card h3 {
             color: #0066cc;
             margin-bottom: 1rem;
@@ -465,7 +471,9 @@
                     <option value="retired">Retired</option>
                 </select>
                 <button class="control-button" onclick="searchEquipment()">Search</button>
+                <button class="control-button" onclick="resetEquipmentSearch()">Reset</button>
             </div>
+            <div id="equipmentSearchStats" class="equipment-search-stats"></div>
         </div>
 
         <div class="inventory-controls">
@@ -499,7 +507,7 @@
         </div>
 
         <div class="inventory-grid">
-            <div class="inventory-card priority-low">
+            <div class="inventory-card priority-low" data-category="filtration" data-status="operational">
                 <h3>
                     <span class="status-indicator status-operational"></span>
                     🔧 Main Filtration Pump
@@ -515,7 +523,7 @@
                 </div>
             </div>
 
-            <div class="inventory-card priority-medium">
+            <div class="inventory-card priority-medium" data-category="lighting" data-status="maintenance">
                 <h3>
                     <span class="status-indicator status-maintenance"></span>
                     💡 LED Lighting System
@@ -531,7 +539,7 @@
                 </div>
             </div>
 
-            <div class="inventory-card priority-high">
+            <div class="inventory-card priority-high" data-category="sensors" data-status="repair">
                 <h3>
                     <span class="status-indicator status-repair"></span>
                     🌡️ Temperature Sensor
@@ -547,7 +555,7 @@
                 </div>
             </div>
 
-            <div class="inventory-card priority-low">
+            <div class="inventory-card priority-low" data-category="pumps" data-status="operational">
                 <h3>
                     <span class="status-indicator status-operational"></span>
                     🚰 Water Circulation Pump
@@ -563,7 +571,7 @@
                 </div>
             </div>
 
-            <div class="inventory-card priority-medium">
+            <div class="inventory-card priority-medium" data-category="electrical" data-status="maintenance">
                 <h3>
                     <span class="status-indicator status-maintenance"></span>
                     🔌 Electrical Panel
@@ -579,7 +587,7 @@
                 </div>
             </div>
 
-            <div class="inventory-card priority-low">
+            <div class="inventory-card priority-low" data-category="sensors" data-status="operational">
                 <h3>
                     <span class="status-indicator status-operational"></span>
                     📡 pH Monitoring System
@@ -820,18 +828,69 @@
             }
         }
 
-        // Search equipment function
+        // Filter the equipment cards by free text, category and status. All three
+        // criteria apply together; an empty control means "any".
         function searchEquipment() {
-            const equipment = document.getElementById('searchEquipment').value;
+            const term = document.getElementById('searchEquipment').value.trim().toLowerCase();
             const category = document.getElementById('searchCategory').value;
             const status = document.getElementById('searchStatus').value;
 
-            alert(`Searching for:\nEquipment: ${equipment || 'All'}\nCategory: ${category || 'All'}\nStatus: ${status || 'All'}`);
+            const cards = document.querySelectorAll('.inventory-card');
+            let matches = 0;
+
+            cards.forEach(card => {
+                const haystack = (card.textContent || '').toLowerCase();
+                const textMatch = !term || haystack.includes(term);
+                const categoryMatch = !category || card.dataset.category === category;
+                const statusMatch = !status || card.dataset.status === status;
+                const visible = textMatch && categoryMatch && statusMatch;
+
+                card.style.display = visible ? '' : 'none';
+                if (visible) matches++;
+            });
+
+            describeEquipmentSearch(matches, cards.length, term, category, status);
+        }
+
+        // Report what the current filter matched.
+        function describeEquipmentSearch(matches, total, term, category, status) {
+            const stats = document.getElementById('equipmentSearchStats');
+            if (!stats) return;
+
+            if (!term && !category && !status) {
+                stats.textContent = `Showing all ${total} items`;
+                return;
+            }
+
+            const criteria = [];
+            if (term) criteria.push(`matching "${term}"`);
+            if (category) criteria.push(`category: ${category}`);
+            if (status) criteria.push(`status: ${status}`);
+
+            stats.textContent = matches === 0
+                ? `No equipment found (${criteria.join(', ')})`
+                : `Showing ${matches} of ${total} items (${criteria.join(', ')})`;
+        }
+
+        // Clear the filter and show everything again.
+        function resetEquipmentSearch() {
+            document.getElementById('searchEquipment').value = '';
+            document.getElementById('searchCategory').value = '';
+            document.getElementById('searchStatus').value = '';
+            searchEquipment();
         }
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             checkLoginStatus();
+
+            // Filter as the user types or changes a dropdown, matching the
+            // real-time behaviour of the staff directory search.
+            document.getElementById('searchEquipment').addEventListener('input', searchEquipment);
+            document.getElementById('searchCategory').addEventListener('change', searchEquipment);
+            document.getElementById('searchStatus').addEventListener('change', searchEquipment);
+
+            searchEquipment();
         });
 
         // Auto-refresh login status every 30 seconds
@@ -1251,6 +1310,7 @@
                 });
             }
         }
+        }
 
         // Display file gallery
         function displayImageGallery(fileData, isLocalStorage = false) {
@@ -1333,8 +1393,6 @@
                 }
             ];
             displayImageGallery(testData);
-        }
-
         }
     </script>
     <script src="scripts/dark-mode.js"></script>
