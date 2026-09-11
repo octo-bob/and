@@ -183,17 +183,6 @@
             margin-left: 0.75rem;
         }
 
-        .hid-storage-note {
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        .hid-storage-note code {
-            background-color: #f1f3f5;
-            padding: 0.1rem 0.3rem;
-            border-radius: 3px;
-        }
-
         .login-required {
             text-align: center;
             padding: 3rem;
@@ -413,52 +402,6 @@
                 and they are only reported for devices that already have permission.
             </p>
             <div id="hidTimeline"></div>
-        </div>
-
-        <div class="tank-section">
-            <h2>Where This Record Lives</h2>
-            <p class="hid-storage-note">
-                The page writes three separate records, each with different survival
-                characteristics:
-            </p>
-            <ul class="hid-storage-note">
-                <li><code>hidDeviceRegistry</code> in localStorage: one entry per distinct
-                    device, with first seen, last seen, a sighting count, and the full
-                    report descriptor. Survives browser restarts.</li>
-                <li><code>hidDeviceEvents</code> in localStorage: a capped timeline of
-                    sightings, grants, and plug events. Survives browser restarts.</li>
-                <li><code>connectedDevices</code> in sessionStorage: sightings for this tab
-                    only, discarded when the tab closes.</li>
-            </ul>
-            <p class="hid-storage-note">
-                A fourth record is kept by the browser itself, not by this page. When a
-                device is granted, the browser stores that permission in its own profile
-                so that the grant survives a reload. That is why devices can appear in the
-                record above with no user action on this visit. Clearing the site record
-                with the button above does not revoke the browser's grant, and revoking the
-                permission in browser settings does not erase the site record. The two are
-                independent, and they can disagree.
-            </p>
-            <p class="hid-storage-note">
-                <strong>Limitation worth noting:</strong> WebHID cannot enumerate attached
-                devices. The chooser dialog sees every connected HID device, but the page
-                only ever learns about the ones already granted plus the ones picked.
-                WebHID also exposes no serial number and no manufacturer string, so two
-                identical models cannot be told apart here.
-            </p>
-            <p class="hid-storage-note">
-                The <a href="usb-devices.html">USB Device Survey</a> keeps the same kind of
-                record over WebUSB, which does report a manufacturer name and a serial
-                number. Surveying one physical device through both pages shows how much the
-                choice of API changes what a site can learn about it.
-            </p>
-            <p class="hid-storage-note">
-                <strong>Access note:</strong> the check guarding this page reads a flag out
-                of localStorage in the browser. It keeps the page tidy for visitors, and it
-                is not a security boundary. Anyone who can open developer tools can set that
-                flag. Compare what the gate actually prevents against what it appears to
-                prevent.
-            </p>
         </div>
 
         <div class="tank-section">
