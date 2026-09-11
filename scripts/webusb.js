@@ -1,39 +1,38 @@
 /**
- * WebHID device registry for the Tank Management page.
+ * WebUSB device registry for the USB Device Survey page.
  *
- * Builds and persists a record of every HID device this origin has been
- * able to see, so the traces are recoverable after the fact.
+ * Deliberately parallel to scripts/webhid.js so the two can be read side by
+ * side. The interesting difference is how much more WebUSB exposes:
  *
- * Three separate stores are written on purpose, because each one behaves
- * differently under examination:
+ *   WebHID gives   vendorId, productId, productName, report descriptors
+ *   WebUSB adds    manufacturerName, SERIAL NUMBER, device and USB versions,
+ *                  class/subclass/protocol, and the full configuration,
+ *                  interface and endpoint tree
  *
- *   localStorage   hidDeviceRegistry  durable, one entry per distinct device
- *   localStorage   hidDeviceEvents    durable, capped timeline of sightings
- *   sessionStorage connectedDevices   per tab, cleared when the tab closes
+ * The serial number is the one that matters. It is a hardware identifier
+ * burned into the device, so it correlates the same physical device across
+ * profiles, browsers and machines in a way a vendor/product pair never can.
  *
- * Scope limit worth understanding: WebHID cannot enumerate the USB bus.
- * A page only ever learns about devices the user has already granted it,
- * plus devices the user picks in the chooser. The chooser itself sees every
- * attached HID device, but that list is never exposed to script.
+ * Three stores are written on purpose, because each behaves differently
+ * under examination:
+ *
+ *   localStorage   usbDeviceRegistry  durable, one entry per distinct device
+ *   localStorage   usbDeviceEvents    durable, capped timeline of sightings
+ *   sessionStorage usbSessionDevices  per tab, cleared when the tab closes
  *
  * Device enumeration does NOT start on its own. The host page must call
- * window.hidRecord.start(), which lets a page hold enumeration back until
- * its access check has passed. Buttons and rendering are wired up on load
- * either way, so an already-stored record stays readable.
+ * window.usbRecord.start() once its access check has passed.
  */
 (function () {
     'use strict';
 
-    var REGISTRY_KEY = 'hidDeviceRegistry';
-    var EVENTS_KEY = 'hidDeviceEvents';
-    var SESSION_KEY = 'connectedDevices';
+    var REGISTRY_KEY = 'usbDeviceRegistry';
+    var EVENTS_KEY = 'usbDeviceEvents';
+    var SESSION_KEY = 'usbSessionDevices';
 
-    // Both logs are capped so a long-lived profile cannot grow them without bound.
     var MAX_EVENTS = 250;
     var MAX_DEVICES = 60;
 
-    // Small lookup tables. Anything not listed is reported as unknown rather
-    // than guessed at, so the record never invents a vendor.
     var VENDORS = {
         0x03eb: 'Atmel',
         0x0403: 'FTDI',
@@ -42,128 +41,142 @@
         0x04d8: 'Microchip',
         0x05ac: 'Apple',
         0x0781: 'SanDisk',
+        0x090c: 'Silicon Motion',
+        0x0bda: 'Realtek',
+        0x13fe: 'Kingston',
         0x1a86: 'QinHeng (CH34x)',
         0x1b4f: 'SparkFun',
         0x2341: 'Arduino',
         0x239a: 'Adafruit',
         0x2e8a: 'Raspberry Pi',
         0x303a: 'Espressif',
-        0x16c0: 'Van Ooijen / Teensy'
+        0x16c0: 'Van Ooijen / Teensy',
+        0x8087: 'Intel'
     };
 
-    var USAGE_PAGES = {
-        0x01: 'Generic Desktop',
-        0x02: 'Simulation Controls',
-        0x03: 'VR Controls',
-        0x04: 'Sport Controls',
-        0x05: 'Game Controls',
-        0x06: 'Generic Device Controls',
-        0x07: 'Keyboard/Keypad',
-        0x08: 'LEDs',
-        0x09: 'Button',
-        0x0a: 'Ordinal',
-        0x0b: 'Telephony',
-        0x0c: 'Consumer',
-        0x0d: 'Digitizer',
-        0x0f: 'Physical Input Device',
-        0x10: 'Unicode',
-        0x14: 'Alphanumeric Display',
-        0x20: 'Sensors',
-        0x40: 'Medical Instrument',
-        0x8c: 'Bar Code Scanner',
-        0x8d: 'Scale',
-        0x90: 'Camera Control',
-        0x91: 'Arcade'
+    // USB base class codes. Worth decoding because the class alone tells you
+    // what kind of device it is without any vendor knowledge.
+    var CLASSES = {
+        0x00: 'Per-interface',
+        0x01: 'Audio',
+        0x02: 'Communications (CDC)',
+        0x03: 'Human Interface Device',
+        0x05: 'Physical',
+        0x06: 'Image (PTP/MTP)',
+        0x07: 'Printer',
+        0x08: 'Mass Storage',
+        0x09: 'Hub',
+        0x0a: 'CDC Data',
+        0x0b: 'Smart Card',
+        0x0d: 'Content Security',
+        0x0e: 'Video',
+        0x0f: 'Personal Healthcare',
+        0x10: 'Audio/Video',
+        0x11: 'Billboard',
+        0x12: 'USB Type-C Bridge',
+        0xdc: 'Diagnostic',
+        0xe0: 'Wireless Controller',
+        0xef: 'Miscellaneous',
+        0xfe: 'Application Specific',
+        0xff: 'Vendor Specific'
     };
 
-    // Usages that matter on the Generic Desktop page, for readability.
-    var GENERIC_DESKTOP_USAGES = {
-        0x01: 'Pointer',
-        0x02: 'Mouse',
-        0x04: 'Joystick',
-        0x05: 'Game Pad',
-        0x06: 'Keyboard',
-        0x07: 'Keypad',
-        0x08: 'Multi-axis Controller',
-        0x80: 'System Control'
-    };
+    // Interface classes the browser refuses to hand over to a page. A device
+    // using only these can still be enumerated, but never communicated with.
+    var PROTECTED_CLASSES = [0x01, 0x03, 0x08, 0x0b, 0x0e];
 
     function hex(n) {
         if (typeof n !== 'number' || isNaN(n)) return 'n/a';
         return '0x' + (n + 0x10000).toString(16).substr(-4).toUpperCase();
     }
 
+    function hex2(n) {
+        if (typeof n !== 'number' || isNaN(n)) return 'n/a';
+        return '0x' + (n + 0x100).toString(16).substr(-2).toUpperCase();
+    }
+
     function vendorName(vid) {
         return VENDORS[vid] || 'unknown vendor';
     }
 
-    function usagePageName(page) {
-        if (page >= 0xff00) return 'Vendor-defined';
-        return USAGE_PAGES[page] || 'unknown page';
+    function className(code) {
+        return CLASSES[code] || 'unknown class';
     }
 
-    function usageName(page, usage) {
-        if (page === 0x01) return GENERIC_DESKTOP_USAGES[usage] || 'unknown usage';
-        if (page >= 0xff00) return 'Vendor-defined';
-        return 'see usage page';
+    function version(major, minor, sub) {
+        if (typeof major !== 'number') return 'n/a';
+        return major + '.' + (minor || 0) + '.' + (sub || 0);
     }
 
-    // A device has no serial number over WebHID, so identity is vendor,
-    // product and name. Two identical models are indistinguishable here,
-    // which is itself worth knowing when reading the record.
+    // Unlike WebHID, identity can use the serial number when the device
+    // reports one. That makes the key genuinely device-specific rather than
+    // model-specific, which is the whole point of the comparison.
     function deviceKey(device) {
-        return hex(device.vendorId) + ':' + hex(device.productId) + ':' +
-               (device.productName || '(no product name)');
+        var serial = device.serialNumber ? device.serialNumber : 'no-serial';
+        return hex(device.vendorId) + ':' + hex(device.productId) + ':' + serial;
     }
 
-    function summarizeReports(reports) {
-        var list = reports || [];
-        return list.map(function (report) {
-            var bits = (report.items || []).reduce(function (sum, item) {
-                return sum + ((item.reportSize || 0) * (item.reportCount || 0));
-            }, 0);
+    function snapshotEndpoints(endpoints) {
+        return (endpoints || []).map(function (e) {
             return {
-                reportId: report.reportId,
-                itemCount: (report.items || []).length,
-                totalBits: bits,
-                totalBytes: Math.ceil(bits / 8)
+                endpointNumber: e.endpointNumber,
+                direction: e.direction,
+                type: e.type,
+                packetSize: e.packetSize
             };
         });
     }
 
-    // Flatten the report descriptor tree into something JSON can hold and a
-    // student can read. HIDCollectionInfo objects do not survive JSON.stringify
-    // usefully on their own.
-    function snapshotCollections(collections) {
-        return (collections || []).map(function (c) {
+    function snapshotInterfaces(interfaces) {
+        return (interfaces || []).map(function (i) {
             return {
-                usagePage: c.usagePage,
-                usagePageHex: hex(c.usagePage),
-                usagePageName: usagePageName(c.usagePage),
-                usage: c.usage,
-                usageHex: hex(c.usage),
-                usageName: usageName(c.usagePage, c.usage),
-                inputReports: summarizeReports(c.inputReports),
-                outputReports: summarizeReports(c.outputReports),
-                featureReports: summarizeReports(c.featureReports),
-                children: snapshotCollections(c.children)
+                interfaceNumber: i.interfaceNumber,
+                claimed: !!i.claimed,
+                alternates: (i.alternates || []).map(function (a) {
+                    return {
+                        alternateSetting: a.alternateSetting,
+                        interfaceClass: a.interfaceClass,
+                        interfaceClassHex: hex2(a.interfaceClass),
+                        interfaceClassName: className(a.interfaceClass),
+                        interfaceSubclass: a.interfaceSubclass,
+                        interfaceProtocol: a.interfaceProtocol,
+                        interfaceName: a.interfaceName || null,
+                        browserProtected: PROTECTED_CLASSES.indexOf(a.interfaceClass) !== -1,
+                        endpoints: snapshotEndpoints(a.endpoints)
+                    };
+                })
             };
         });
     }
 
-    function countReports(snapshot) {
-        return snapshot.reduce(function (acc, c) {
-            var child = countReports(c.children);
+    function snapshotConfigurations(configurations) {
+        return (configurations || []).map(function (c) {
             return {
-                input: acc.input + c.inputReports.length + child.input,
-                output: acc.output + c.outputReports.length + child.output,
-                feature: acc.feature + c.featureReports.length + child.feature
+                configurationValue: c.configurationValue,
+                configurationName: c.configurationName || null,
+                interfaces: snapshotInterfaces(c.interfaces)
             };
-        }, { input: 0, output: 0, feature: 0 });
+        });
     }
 
-    // Storage can throw (private browsing, blocked site data, quota), and a
-    // logging feature must never take the page down with it.
+    function countInterfaces(configs) {
+        var total = 0;
+        var protectedCount = 0;
+        var classes = [];
+        configs.forEach(function (c) {
+            c.interfaces.forEach(function (i) {
+                total += 1;
+                i.alternates.forEach(function (a) {
+                    if (a.browserProtected) protectedCount += 1;
+                    if (classes.indexOf(a.interfaceClassName) === -1) {
+                        classes.push(a.interfaceClassName);
+                    }
+                });
+            });
+        });
+        return { total: total, browserProtected: protectedCount, classes: classes };
+    }
+
     function readJSON(store, key, fallback) {
         try {
             var raw = store.getItem(key);
@@ -192,7 +205,6 @@
         var events = readJSON(localStorage, EVENTS_KEY, []);
         if (!Array.isArray(events)) events = [];
         events.push({ at: nowISO(), type: type, device: key || null, note: note || null });
-        // Keep the newest MAX_EVENTS entries.
         if (events.length > MAX_EVENTS) events = events.slice(events.length - MAX_EVENTS);
         writeJSON(localStorage, EVENTS_KEY, events);
         return events;
@@ -200,9 +212,6 @@
 
     /**
      * Upsert a device into the durable registry.
-     *
-     * `method` records how the page learned about the device, which is the
-     * most important field in the whole record:
      *
      *   granted-earlier  returned by getDevices() with no user gesture, so a
      *                    permission grant already existed in this profile
@@ -214,11 +223,10 @@
         if (typeof registry !== 'object' || registry === null || Array.isArray(registry)) registry = {};
 
         var key = deviceKey(device);
-        var snapshot = snapshotCollections(device.collections);
+        var configs = snapshotConfigurations(device.configurations);
         var entry = registry[key];
 
         if (!entry) {
-            // Evict the least recently seen device once the cap is hit.
             var keys = Object.keys(registry);
             if (keys.length >= MAX_DEVICES) {
                 keys.sort(function (a, b) {
@@ -229,17 +237,29 @@
             entry = {
                 key: key,
                 productName: device.productName || '(no product name)',
+                manufacturerName: device.manufacturerName || '(no manufacturer name)',
+                // The field WebHID has no equivalent for.
+                serialNumber: device.serialNumber || null,
                 vendorId: device.vendorId,
                 vendorIdHex: hex(device.vendorId),
                 vendorName: vendorName(device.vendorId),
                 productId: device.productId,
                 productIdHex: hex(device.productId),
+                deviceClass: device.deviceClass,
+                deviceClassHex: hex2(device.deviceClass),
+                deviceClassName: className(device.deviceClass),
+                deviceSubclass: device.deviceSubclass,
+                deviceProtocol: device.deviceProtocol,
+                deviceVersion: version(device.deviceVersionMajor, device.deviceVersionMinor,
+                                       device.deviceVersionSubminor),
+                usbVersion: version(device.usbVersionMajor, device.usbVersionMinor,
+                                    device.usbVersionSubminor),
                 firstSeen: nowISO(),
                 lastSeen: nowISO(),
                 timesSeen: 0,
                 discoveryMethods: [],
-                collections: snapshot,
-                reportCounts: countReports(snapshot)
+                configurations: configs,
+                interfaceSummary: countInterfaces(configs)
             };
         }
 
@@ -248,9 +268,8 @@
         if (entry.discoveryMethods.indexOf(method) === -1) {
             entry.discoveryMethods.push(method);
         }
-        // Refresh the descriptor in case a later sighting carries more detail.
-        entry.collections = snapshot;
-        entry.reportCounts = countReports(snapshot);
+        entry.configurations = configs;
+        entry.interfaceSummary = countInterfaces(configs);
 
         registry[key] = entry;
         writeJSON(localStorage, REGISTRY_KEY, registry);
@@ -259,13 +278,13 @@
         return entry;
     }
 
-    // Per-tab sighting list. The key name is kept from the original script so
-    // anything already looking for it keeps working.
     function recordSessionSighting(entry, method) {
         var arr = readJSON(sessionStorage, SESSION_KEY, []);
         if (!Array.isArray(arr)) arr = [];
         arr.push({
             productName: entry.productName,
+            manufacturerName: entry.manufacturerName,
+            serialNumber: entry.serialNumber,
             vendorId: entry.vendorId,
             productId: entry.productId,
             vendorName: entry.vendorName,
@@ -290,39 +309,46 @@
     }
 
     function writeLog(message) {
-        var pane = el('log');
+        var pane = el('usbLog');
         if (!pane) return;
         var line = text('div', '[' + new Date().toLocaleTimeString() + '] ' + message);
         pane.appendChild(line);
         pane.scrollTop = pane.scrollHeight;
     }
 
-    function describeCollections(snapshot, depth, lines) {
-        var pad = new Array(depth + 1).join('  ');
-        snapshot.forEach(function (c) {
-            lines.push(pad + c.usagePageName + ' (' + c.usagePageHex + ') / ' +
-                       c.usageName + ' (' + c.usageHex + ')');
-            ['inputReports', 'outputReports', 'featureReports'].forEach(function (kind) {
-                c[kind].forEach(function (r) {
-                    lines.push(pad + '  ' + kind.replace('Reports', '') +
-                               ' report id ' + r.reportId +
-                               ', ' + r.itemCount + ' item(s), ' + r.totalBytes + ' byte(s)');
+    function describeConfigurations(configs, lines) {
+        configs.forEach(function (c) {
+            lines.push('Configuration ' + c.configurationValue +
+                       (c.configurationName ? ' (' + c.configurationName + ')' : ''));
+            c.interfaces.forEach(function (i) {
+                lines.push('  Interface ' + i.interfaceNumber +
+                           (i.claimed ? ' [claimed]' : ''));
+                i.alternates.forEach(function (a) {
+                    lines.push('    Alt ' + a.alternateSetting + ': ' +
+                               a.interfaceClassName + ' (' + a.interfaceClassHex + ')' +
+                               ', subclass ' + hex2(a.interfaceSubclass) +
+                               ', protocol ' + hex2(a.interfaceProtocol) +
+                               (a.browserProtected ? '  <- browser will not allow claiming this' : ''));
+                    if (a.interfaceName) lines.push('      name: ' + a.interfaceName);
+                    a.endpoints.forEach(function (e) {
+                        lines.push('      Endpoint ' + e.endpointNumber + ' ' +
+                                   e.direction + ' ' + e.type + ', ' + e.packetSize + ' byte packets');
+                    });
                 });
             });
-            describeCollections(c.children, depth + 1, lines);
         });
         return lines;
     }
 
     function renderRegistry() {
-        var host = el('hidRegistry');
+        var host = el('usbRegistry');
         if (!host) return;
         host.textContent = '';
 
         var registry = readJSON(localStorage, REGISTRY_KEY, {});
         var keys = Object.keys(registry);
 
-        var count = el('hidDeviceCount');
+        var count = el('usbDeviceCount');
         if (count) {
             count.textContent = keys.length === 0
                 ? 'No devices recorded yet.'
@@ -341,35 +367,46 @@
         keys.forEach(function (key) {
             var d = registry[key];
             var card = document.createElement('div');
-            card.className = 'hid-device-card';
+            card.className = 'usb-device-card';
 
             card.appendChild(text('h4', d.productName));
 
             var table = document.createElement('table');
-            table.className = 'hid-table';
-            [
+            table.className = 'usb-table';
+            var rows = [
+                ['Manufacturer', d.manufacturerName],
+                ['Serial number', d.serialNumber || 'not reported by this device'],
                 ['Vendor', d.vendorIdHex + '  (' + d.vendorName + ')'],
                 ['Product', d.productIdHex],
+                ['Device class', d.deviceClassHex + '  (' + d.deviceClassName + ')'],
+                ['Device version', d.deviceVersion],
+                ['USB version', d.usbVersion],
                 ['First seen', d.firstSeen],
                 ['Last seen', d.lastSeen],
                 ['Times seen', String(d.timesSeen)],
                 ['How it was seen', d.discoveryMethods.join(', ')],
-                ['Reports', d.reportCounts.input + ' input, ' +
-                            d.reportCounts.output + ' output, ' +
-                            d.reportCounts.feature + ' feature']
-            ].forEach(function (row) {
+                ['Interfaces', d.interfaceSummary.total + ' total, ' +
+                               d.interfaceSummary.browserProtected + ' the browser blocks'],
+                ['Interface classes', d.interfaceSummary.classes.join(', ') || 'none reported']
+            ];
+            rows.forEach(function (row) {
                 var tr = document.createElement('tr');
                 tr.appendChild(text('th', row[0]));
-                tr.appendChild(text('td', row[1]));
+                var td = text('td', row[1]);
+                // Call out the field WebHID cannot give you at all.
+                if (row[0] === 'Serial number' && d.serialNumber) {
+                    td.className = 'usb-serial';
+                }
+                tr.appendChild(td);
                 table.appendChild(tr);
             });
             card.appendChild(table);
 
-            var lines = describeCollections(d.collections, 0, []);
+            var lines = describeConfigurations(d.configurations, []);
             if (lines.length) {
                 var details = document.createElement('details');
-                details.appendChild(text('summary', 'Report descriptor (' + lines.length + ' lines)'));
-                details.appendChild(text('pre', lines.join('\n'), 'hid-descriptor'));
+                details.appendChild(text('summary', 'Configuration tree (' + lines.length + ' lines)'));
+                details.appendChild(text('pre', lines.join('\n'), 'usb-descriptor'));
                 card.appendChild(details);
             }
 
@@ -378,7 +415,7 @@
     }
 
     function renderTimeline() {
-        var host = el('hidTimeline');
+        var host = el('usbTimeline');
         if (!host) return;
         host.textContent = '';
 
@@ -389,13 +426,13 @@
         }
 
         var list = document.createElement('ol');
-        list.className = 'hid-timeline-list';
+        list.className = 'usb-timeline-list';
         events.slice().reverse().forEach(function (ev) {
             var li = document.createElement('li');
-            li.appendChild(text('span', ev.at, 'hid-event-time'));
-            li.appendChild(text('span', ev.type, 'hid-event-type'));
-            li.appendChild(text('span', ev.device || '', 'hid-event-device'));
-            if (ev.note) li.appendChild(text('span', ev.note, 'hid-event-note'));
+            li.appendChild(text('span', ev.at, 'usb-event-time'));
+            li.appendChild(text('span', ev.type, 'usb-event-type'));
+            li.appendChild(text('span', ev.device || '', 'usb-event-device'));
+            if (ev.note) li.appendChild(text('span', ev.note, 'usb-event-note'));
             list.appendChild(li);
         });
         host.appendChild(list);
@@ -414,9 +451,10 @@
             origin: location.origin,
             page: location.pathname,
             userAgent: navigator.userAgent,
-            webHidSupported: 'hid' in navigator,
-            note: 'WebHID cannot enumerate the USB bus. This record holds only ' +
-                  'devices granted to this origin or picked in the chooser.',
+            webUsbSupported: 'usb' in navigator,
+            note: 'WebUSB cannot enumerate the USB bus. This record holds only ' +
+                  'devices granted to this origin or picked in the chooser. Unlike ' +
+                  'WebHID it does report manufacturer name and serial number.',
             devices: readJSON(localStorage, REGISTRY_KEY, {}),
             events: readJSON(localStorage, EVENTS_KEY, []),
             sessionSightings: readJSON(sessionStorage, SESSION_KEY, [])
@@ -430,24 +468,27 @@
 
     function buildCSV() {
         var registry = readJSON(localStorage, REGISTRY_KEY, {});
-        var header = ['productName', 'vendorIdHex', 'vendorName', 'productIdHex',
+        var header = ['productName', 'manufacturerName', 'serialNumber',
+                      'vendorIdHex', 'vendorName', 'productIdHex',
+                      'deviceClassName', 'deviceVersion', 'usbVersion',
                       'firstSeen', 'lastSeen', 'timesSeen', 'discoveryMethods',
-                      'inputReports', 'outputReports', 'featureReports'];
+                      'interfaceCount', 'protectedInterfaces', 'interfaceClasses'];
         var rows = [header.map(csvCell).join(',')];
         Object.keys(registry).forEach(function (key) {
             var d = registry[key];
             rows.push([
-                d.productName, d.vendorIdHex, d.vendorName, d.productIdHex,
+                d.productName, d.manufacturerName, d.serialNumber,
+                d.vendorIdHex, d.vendorName, d.productIdHex,
+                d.deviceClassName, d.deviceVersion, d.usbVersion,
                 d.firstSeen, d.lastSeen, d.timesSeen,
                 d.discoveryMethods.join(' '),
-                d.reportCounts.input, d.reportCounts.output, d.reportCounts.feature
+                d.interfaceSummary.total, d.interfaceSummary.browserProtected,
+                d.interfaceSummary.classes.join(' ')
             ].map(csvCell).join(','));
         });
         return rows.join('\r\n');
     }
 
-    // Downloading is its own artifact: it lands in the browser's download
-    // history and on disk, outside the profile's storage directories.
     function download(filename, mime, body) {
         var blob = new Blob([body], { type: mime });
         var url = URL.createObjectURL(blob);
@@ -466,12 +507,12 @@
     }
 
     function exportJSON() {
-        download('hid-device-record-' + stamp() + '.json', 'application/json',
+        download('usb-device-record-' + stamp() + '.json', 'application/json',
                  JSON.stringify(buildReport(), null, 2));
     }
 
     function exportCSV() {
-        download('hid-device-record-' + stamp() + '.csv', 'text/csv', buildCSV());
+        download('usb-device-record-' + stamp() + '.csv', 'text/csv', buildCSV());
     }
 
     function copyJSON() {
@@ -487,9 +528,7 @@
         }
     }
 
-    // Clearing the site's own log does not revoke the browser's permission
-    // grant. getDevices() will still return the device on the next load, which
-    // is the point: the site log and the browser's grant are separate records.
+    // Clearing the site record does not revoke the browser's permission grant.
     function clearRecord() {
         try {
             localStorage.removeItem(REGISTRY_KEY);
@@ -505,26 +544,27 @@
     // --------------------------------------------------------------------- init
 
     function showUnsupported(reason) {
-        var banner = el('hidSupport');
+        var banner = el('usbSupport');
         if (banner) {
-            banner.className = 'hid-banner hid-banner-warn';
+            banner.className = 'usb-banner usb-banner-warn';
             banner.textContent = reason;
         }
         writeLog(reason);
     }
 
     function enumerateGranted() {
-        return navigator.hid.getDevices().then(function (devices) {
+        return navigator.usb.getDevices().then(function (devices) {
             if (!devices.length) {
-                writeLog('No previously granted HID devices. Use the connect button.');
+                writeLog('No previously granted USB devices. Use the connect button.');
                 return;
             }
             writeLog('Found ' + devices.length + ' device(s) already granted to this origin ' +
                      'with no user action required.');
             devices.forEach(function (device) {
-                recordDevice(device, 'granted-earlier');
-                writeLog('Recorded ' + device.productName + ' (' + hex(device.vendorId) +
-                         ':' + hex(device.productId) + ')');
+                var entry = recordDevice(device, 'granted-earlier');
+                writeLog('Recorded ' + entry.productName + ' (' + entry.vendorIdHex +
+                         ':' + entry.productIdHex + ') serial ' +
+                         (entry.serialNumber || 'not reported'));
             });
         }, function (err) {
             writeLog('getDevices() failed: ' + err.message);
@@ -532,18 +572,18 @@
     }
 
     function requestDevice() {
-        return navigator.hid.requestDevice({ filters: [] }).then(function (devices) {
-            if (!devices.length) {
+        return navigator.usb.requestDevice({ filters: [] }).then(function (device) {
+            // requestDevice resolves with a single device, not an array.
+            if (!device) {
                 writeLog('Chooser dismissed without selecting a device.');
                 recordEvent('chooser-dismissed', null);
                 render();
                 return;
             }
-            devices.forEach(function (device) {
-                recordDevice(device, 'user-selected');
-                writeLog('User granted ' + device.productName + ' (' + hex(device.vendorId) +
-                         ':' + hex(device.productId) + ')');
-            });
+            var entry = recordDevice(device, 'user-selected');
+            writeLog('User granted ' + entry.productName + ' (' + entry.vendorIdHex +
+                     ':' + entry.productIdHex + ') serial ' +
+                     (entry.serialNumber || 'not reported'));
             render();
         }, function (err) {
             writeLog('requestDevice() failed: ' + err.message);
@@ -553,14 +593,14 @@
     }
 
     function wireButtons() {
-        var connect = el('requestDeviceButton');
+        var connect = el('usbRequestDeviceButton');
         if (connect) connect.addEventListener('click', requestDevice);
 
         var map = {
-            hidExportJSON: exportJSON,
-            hidExportCSV: exportCSV,
-            hidCopyJSON: copyJSON,
-            hidClearRecord: clearRecord
+            usbExportJSON: exportJSON,
+            usbExportCSV: exportCSV,
+            usbCopyJSON: copyJSON,
+            usbClearRecord: clearRecord
         };
         Object.keys(map).forEach(function (id) {
             var node = el(id);
@@ -575,41 +615,34 @@
 
     var started = false;
 
-    /**
-     * Begin talking to WebHID. Called by the host page once its access check
-     * has passed, so a locked page does not quietly enumerate devices behind
-     * the access-restricted notice. Safe to call more than once.
-     */
     function start() {
         if (started) return Promise.resolve();
         started = true;
 
-        if (!('hid' in navigator)) {
-            showUnsupported('WebHID is not available in this browser. It is supported in ' +
+        if (!('usb' in navigator)) {
+            showUnsupported('WebUSB is not available in this browser. It is supported in ' +
                             'Chromium browsers (Chrome, Edge) over HTTPS or localhost. ' +
                             'Any record shown below was captured earlier in this profile.');
-            var connect = el('requestDeviceButton');
+            var connect = el('usbRequestDeviceButton');
             if (connect) connect.disabled = true;
             return Promise.resolve();
         }
 
-        var banner = el('hidSupport');
+        var banner = el('usbSupport');
         if (banner) {
-            banner.className = 'hid-banner hid-banner-ok';
-            banner.textContent = 'WebHID is available. Devices already granted to this origin ' +
+            banner.className = 'usb-banner usb-banner-ok';
+            banner.textContent = 'WebUSB is available. Devices already granted to this origin ' +
                                  'are listed without any user action.';
         }
 
-        // Plug and unplug events only fire for devices that already have
-        // permission, so this builds a timeline of physical device activity.
-        navigator.hid.addEventListener('connect', function (e) {
+        navigator.usb.addEventListener('connect', function (e) {
             recordDevice(e.device, 'connect-event');
-            writeLog('Device connected: ' + e.device.productName);
+            writeLog('Device connected: ' + (e.device.productName || 'unnamed device'));
             render();
         });
-        navigator.hid.addEventListener('disconnect', function (e) {
+        navigator.usb.addEventListener('disconnect', function (e) {
             recordEvent('disconnect-event', deviceKey(e.device));
-            writeLog('Device disconnected: ' + e.device.productName);
+            writeLog('Device disconnected: ' + (e.device.productName || 'unnamed device'));
             render();
         });
 
@@ -622,15 +655,14 @@
         init();
     }
 
-    // Exposed for the page and for testing.
-    window.hidRecord = {
+    window.usbRecord = {
         start: start,
         buildReport: buildReport,
         buildCSV: buildCSV,
         recordDevice: recordDevice,
         recordEvent: recordEvent,
         deviceKey: deviceKey,
-        snapshotCollections: snapshotCollections,
+        snapshotConfigurations: snapshotConfigurations,
         clearRecord: clearRecord,
         render: render
     };

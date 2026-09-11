@@ -194,6 +194,44 @@
             border-radius: 3px;
         }
 
+        .login-required {
+            text-align: center;
+            padding: 3rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+
+        .login-required h3 {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .login-required p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-button {
+            background-color: #0066cc;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #0055b3;
+        }
+
+        .device-button:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+        }
+
         .info-text {
             color: #666;
             line-height: 1.6;
@@ -295,7 +333,7 @@
         <p>Monitor and control aquarium systems with Arduino-based sensors and controllers.</p>
     </section>
 
-    <div class="tank-container">
+    <div class="tank-container" id="tankContent" style="display: none;">
         <div class="status-panel">
             <h3>System Status</h3>
             <p class="info-text">
@@ -408,6 +446,19 @@
                 WebHID also exposes no serial number and no manufacturer string, so two
                 identical models cannot be told apart here.
             </p>
+            <p class="hid-storage-note">
+                The <a href="usb-devices.html">USB Device Survey</a> keeps the same kind of
+                record over WebUSB, which does report a manufacturer name and a serial
+                number. Surveying one physical device through both pages shows how much the
+                choice of API changes what a site can learn about it.
+            </p>
+            <p class="hid-storage-note">
+                <strong>Access note:</strong> the check guarding this page reads a flag out
+                of localStorage in the browser. It keeps the page tidy for visitors, and it
+                is not a security boundary. Anyone who can open developer tools can set that
+                flag. Compare what the gate actually prevents against what it appears to
+                prevent.
+            </p>
         </div>
 
         <div class="tank-section">
@@ -463,11 +514,42 @@
         </div>
     </div>
 
+    <div class="login-required" id="loginRequired">
+        <h3>🔒 Access Restricted</h3>
+        <p>The tank management system controls live aquarium equipment and requires employee authentication. Please log in to access sensor data and device controls.</p>
+        <a href="login.html" class="login-button">Employee Login</a>
+    </div>
+
     <footer>
         <p>&copy; 2025 Aquatic Nature Discovery | A nonprofit organization</p>
     </footer>
 
     <script>
+        // Check if user is logged in (simple session check)
+        function checkLoginStatus() {
+            // In a real application, this would check for a valid session token
+            // For demo purposes, we'll use localStorage to simulate a session
+            const isLoggedIn = localStorage.getItem('employeeLoggedIn') === 'true';
+
+            document.getElementById('tankContent').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('loginRequired').style.display = isLoggedIn ? 'none' : 'block';
+
+            // Device enumeration is held back until the check passes, so a locked
+            // page does not quietly talk to WebHID behind the notice.
+            if (isLoggedIn && window.hidRecord) {
+                window.hidRecord.start();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkLoginStatus);
+
+        // Auto-refresh login status every 30 seconds
+        setInterval(checkLoginStatus, 30000);
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
     </script>
     <script src="scripts/dark-mode.js"></script>
     <script src="scripts/session-tracker.js"></script>
