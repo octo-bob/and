@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/"
+                       xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+  <ShortName>Aquatic Nature Discovery</ShortName>
+  <Description>Search exhibits, events, conservation programs, and visitor information at Aquatic Nature Discovery.</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="16" height="16" type="image/png">https://aquaticnaturediscovery.org/images/and-logo.png</Image>
+  <Url type="text/html"
+       method="get"
+       template="https://aquaticnaturediscovery.org/search.html?q={searchTerms}"/>
+  <moz:SearchForm>https://aquaticnaturediscovery.org/search.html</moz:SearchForm>
+</OpenSearchDescription>

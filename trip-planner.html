@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="images/and-logo.png" type="image/png">
+    <link rel="search" type="application/opensearchdescription+xml" title="Aquatic Nature Discovery" href="opensearch.xml">
     <title>Trip Planner - Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -408,8 +409,8 @@
             <a href="education.html">Education</a>
             <a href="events.html">Events</a>
             <div class="search-container">
-                <form class="search-form" onsubmit="performSearch(event)">
-                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                <form class="search-form" method="get" action="search.html">
+                    <input type="text" id="searchInput" name="q" placeholder="Search..." class="search-input">
                     <button type="submit" class="search-btn">🔍</button>
                 </form>
             </div>
@@ -1057,14 +1058,6 @@
             }
         });
 
-        // Search functionality
-        function performSearch(event) {
-            event.preventDefault();
-            const query = document.getElementById('searchInput').value.trim();
-            if (query) {
-                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-            }
-        }
 
 
         // Initialize

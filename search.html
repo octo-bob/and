@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="images/and-logo.png" type="image/png">
+    <link rel="search" type="application/opensearchdescription+xml" title="Aquatic Nature Discovery" href="opensearch.xml">
     <title>Search Results - Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -211,8 +212,8 @@
 
     <div class="search-container">
         <div class="search-form">
-            <form id="searchForm" onsubmit="performSearch(event)">
-                <input type="text" id="searchQuery" class="search-input" placeholder="Search for exhibits, events, conservation programs..." value="">
+            <form id="searchForm" method="get" action="search.html">
+                <input type="text" id="searchQuery" name="q" class="search-input" placeholder="Search for exhibits, events, conservation programs..." value="">
                 <button type="submit" class="search-button">🔍 Search</button>
             </form>
             <div id="searchSuggestions" class="search-suggestions"></div>
@@ -221,7 +222,7 @@
         <div class="search-filters">
             <div class="filter-group">
                 <label for="categoryFilter">Category:</label>
-                <select id="categoryFilter" onchange="filterResults()">
+                <select id="categoryFilter" onchange="onControlChange()">
                     <option value="">All Categories</option>
                     <option value="exhibits">Exhibits</option>
                     <option value="events">Events</option>
@@ -233,7 +234,7 @@
             </div>
             <div class="filter-group">
                 <label for="sortBy">Sort by:</label>
-                <select id="sortBy" onchange="sortResults()">
+                <select id="sortBy" onchange="onControlChange()">
                     <option value="relevance">Relevance</option>
                     <option value="date">Date</option>
                     <option value="title">Title</option>
@@ -455,23 +456,44 @@
             return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
-        // Get search query from URL parameters
-        function getSearchQueryFromURL() {
+        // Read the full search state from the URL. The URL is the single source
+        // of truth: q, category and sort together reproduce any results view.
+        function getSearchStateFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('q') || '';
+            return {
+                query: urlParams.get('q') || '',
+                category: urlParams.get('category') || '',
+                sort: urlParams.get('sort') || 'relevance'
+            };
         }
 
-        // Perform search
-        function performSearch(event) {
-            event.preventDefault();
-            const query = document.getElementById('searchQuery').value.trim();
-            if (query) {
-                // Update URL with search query
-                const newURL = `search.html?q=${encodeURIComponent(query)}`;
-                window.history.pushState({}, '', newURL);
-                
-                searchContent(query);
-            }
+        // Write the current controls back into the URL. The search box itself
+        // submits natively (method="get"), so only filter and sort changes come
+        // through here. pushState leaves a history entry without a network request.
+        function updateURLFromControls() {
+            const params = new URLSearchParams();
+            if (currentQuery) params.set('q', currentQuery);
+
+            const category = document.getElementById('categoryFilter').value;
+            if (category) params.set('category', category);
+
+            const sort = document.getElementById('sortBy').value;
+            if (sort && sort !== 'relevance') params.set('sort', sort);
+
+            const queryString = params.toString();
+            window.history.pushState(
+                { query: currentQuery, category: category, sort: sort },
+                '',
+                queryString ? `search.html?${queryString}` : 'search.html'
+            );
+        }
+
+        // Put the query in the page title so it is recorded in browser history
+        // alongside the URL, the way a search engine does.
+        function updateDocumentTitle(query) {
+            document.title = query
+                ? `${query} - Search - Aquatic Nature Discovery`
+                : 'Search Results - Aquatic Nature Discovery';
         }
 
         // Track search query in sessionStorage
@@ -491,9 +513,12 @@
 
         // Search through content
         function searchContent(query) {
-            currentQuery = query.toLowerCase();
-            const searchTerms = currentQuery.split(' ').filter(term => term.length > 0);
-            
+            // Keep the query as the visitor typed it so the displayed text and
+            // the URL preserve their original casing. Matching lowercases below.
+            currentQuery = query;
+            updateDocumentTitle(query);
+            const searchTerms = query.toLowerCase().split(' ').filter(term => term.length > 0);
+
             // Score each content item
             const scoredResults = websiteContent.map(item => {
                 let score = 0;
@@ -517,18 +542,24 @@
                 .sort((a, b) => b.score - a.score);
 
             trackSearchQuery(query, currentResults.length);
-            displayResults();
+            applyView();
         }
 
-        // Display search results
-        function displayResults() {
+        // Render a result list. Used for every view, so the empty state and the
+        // result markup live in one place instead of two near-identical copies.
+        function renderResults(results, statsMessage) {
             const resultsContainer = document.getElementById('searchResults');
             const statsContainer = document.getElementById('searchStats');
-            
-            if (currentResults.length === 0) {
+
+            if (results.length === 0) {
+                const noMatchAtAll = currentResults.length === 0;
+                const heading = noMatchAtAll
+                    ? `No results found for "${escapeHTML(currentQuery)}"`
+                    : 'No results found with current filters';
+
                 resultsContainer.innerHTML = `
                     <div class="no-results">
-                        <h3>No results found for "${escapeHTML(currentQuery)}"</h3>
+                        <h3>${heading}</h3>
                         <p>Try different keywords or check your spelling.</p>
                         <p>You can also browse our main sections:</p>
                         <ul style="text-align: left; display: inline-block;">
@@ -539,27 +570,68 @@
                         </ul>
                     </div>
                 `;
-                statsContainer.innerHTML = '';
-            } else {
-                statsContainer.innerHTML = `Found ${currentResults.length} result${currentResults.length === 1 ? '' : 's'} for "${escapeHTML(currentQuery)}"`;
-                
-                let resultsHTML = '';
-                currentResults.forEach(item => {
-                    const highlightedTitle = highlightText(item.title, currentQuery);
-                    const highlightedSnippet = highlightText(item.snippet, currentQuery);
-                    
-                    resultsHTML += `
-                        <div class="result-item">
-                            <a href="${item.url}" class="result-title">${highlightedTitle}</a>
-                            <div class="result-url">${item.url}</div>
-                            <div class="result-snippet">${highlightedSnippet}</div>
-                            <span class="result-category">${getCategoryDisplayName(item.category)}</span>
-                        </div>
-                    `;
-                });
-                
-                resultsContainer.innerHTML = resultsHTML;
+                statsContainer.innerHTML = noMatchAtAll ? '' : statsMessage;
+                return;
             }
+
+            statsContainer.innerHTML = statsMessage;
+
+            let resultsHTML = '';
+            results.forEach(item => {
+                resultsHTML += `
+                    <div class="result-item">
+                        <a href="${escapeHTML(item.url)}" class="result-title">${highlightText(item.title, currentQuery)}</a>
+                        <div class="result-url">${escapeHTML(item.url)}</div>
+                        <div class="result-snippet">${highlightText(item.snippet, currentQuery)}</div>
+                        <span class="result-category">${escapeHTML(getCategoryDisplayName(item.category))}</span>
+                    </div>
+                `;
+            });
+
+            resultsContainer.innerHTML = resultsHTML;
+        }
+
+        // Compose the category filter and the sort order. These used to be two
+        // separate functions that each re-read currentResults independently, so
+        // picking a category and then a sort silently discarded the category.
+        function applyView() {
+            const category = document.getElementById('categoryFilter').value;
+            const sort = document.getElementById('sortBy').value;
+
+            const view = category
+                ? currentResults.filter(item => item.category === category)
+                : currentResults.slice();
+
+            switch (sort) {
+                case 'date':
+                    view.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'title':
+                    view.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+                default:
+                    view.sort((a, b) => b.score - a.score);
+                    break;
+            }
+
+            renderResults(view, describeView(view.length, category, sort));
+        }
+
+        // Build the stats line describing the current view.
+        function describeView(count, category, sort) {
+            if (!currentQuery) return '';
+
+            const parts = [`Found ${count} result${count === 1 ? '' : 's'} for "${escapeHTML(currentQuery)}"`];
+            if (category) parts.push(`category: ${escapeHTML(getCategoryDisplayName(category))}`);
+            if (sort && sort !== 'relevance') parts.push(`sorted by ${escapeHTML(sort)}`);
+            return parts.join(' - ');
+        }
+
+        // Filter and sort changes rewrite the URL, then re-render. No network
+        // request happens, unlike submitting the search box itself.
+        function onControlChange() {
+            updateURLFromControls();
+            applyView();
         }
 
         // Highlight search terms in text
@@ -595,74 +667,6 @@
                 'support': 'Support'
             };
             return categoryNames[category] || category;
-        }
-
-        // Filter results by category
-        function filterResults() {
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            
-            if (!categoryFilter) {
-                displayResults();
-                return;
-            }
-            
-            const filteredResults = currentResults.filter(item => item.category === categoryFilter);
-            displayFilteredResults(filteredResults, `Filtered by: ${getCategoryDisplayName(categoryFilter)}`);
-        }
-
-        // Sort results
-        function sortResults() {
-            const sortBy = document.getElementById('sortBy').value;
-            let sortedResults = [...currentResults];
-            
-            switch (sortBy) {
-                case 'date':
-                    sortedResults.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    break;
-                case 'title':
-                    sortedResults.sort((a, b) => a.title.localeCompare(b.title));
-                    break;
-                default: // relevance
-                    // Already sorted by score
-                    break;
-            }
-            
-            displayFilteredResults(sortedResults, `Sorted by: ${sortBy}`);
-        }
-
-        // Display filtered/sorted results
-        function displayFilteredResults(results, message) {
-            const resultsContainer = document.getElementById('searchResults');
-            const statsContainer = document.getElementById('searchStats');
-            
-            if (results.length === 0) {
-                resultsContainer.innerHTML = `
-                    <div class="no-results">
-                        <h3>No results found with current filters</h3>
-                        <p>Try adjusting your search criteria.</p>
-                    </div>
-                `;
-                statsContainer.innerHTML = message;
-            } else {
-                statsContainer.innerHTML = `${message} - Found ${results.length} result${results.length === 1 ? '' : 's'}`;
-                
-                let resultsHTML = '';
-                results.forEach(item => {
-                    const highlightedTitle = highlightText(item.title, currentQuery);
-                    const highlightedSnippet = highlightText(item.snippet, currentQuery);
-                    
-                    resultsHTML += `
-                        <div class="result-item">
-                            <a href="${item.url}" class="result-title">${highlightedTitle}</a>
-                            <div class="result-url">${item.url}</div>
-                            <div class="result-snippet">${highlightedSnippet}</div>
-                            <span class="result-category">${getCategoryDisplayName(item.category)}</span>
-                        </div>
-                    `;
-                });
-                
-                resultsContainer.innerHTML = resultsHTML;
-            }
         }
 
         // Search suggestions functionality
@@ -707,7 +711,14 @@
         function selectSuggestion(suggestion) {
             document.getElementById('searchQuery').value = suggestion;
             document.getElementById('searchSuggestions').style.display = 'none';
+
+            // A suggestion click is a new search, so reset the filters and mirror
+            // it into the URL. It used to search without touching the URL at all,
+            // which left the address bar disagreeing with the results on screen.
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('sortBy').value = 'relevance';
             searchContent(suggestion);
+            updateURLFromControls();
         }
 
         // Hide suggestions when clicking outside
@@ -720,13 +731,27 @@
             }
         });
 
+        // Restore the page from whatever the URL currently says. Called on load
+        // and on popstate, so Back and Forward move through filter and sort
+        // changes instead of leaving a stale view behind.
+        function applyStateFromURL() {
+            const state = getSearchStateFromURL();
+
+            document.getElementById('searchQuery').value = state.query;
+            document.getElementById('categoryFilter').value = state.category;
+            document.getElementById('sortBy').value = state.sort;
+            updateDocumentTitle(state.query);
+
+            if (state.query) {
+                searchContent(state.query);
+            }
+        }
+
+        window.addEventListener('popstate', applyStateFromURL);
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            const query = getSearchQueryFromURL();
-            if (query) {
-                document.getElementById('searchQuery').value = query;
-                searchContent(query);
-            }
+            applyStateFromURL();
 
             // Add input event listener for suggestions
             document.getElementById('searchQuery').addEventListener('input', function() {
