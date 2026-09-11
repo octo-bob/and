@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="images/and-logo.png" type="image/png">
+    <link rel="search" type="application/opensearchdescription+xml" title="Aquatic Nature Discovery" href="opensearch.xml">
     <title>Notification Builder - Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -510,8 +511,8 @@
             <a href="events.html">Events</a>
             <a href="portal.html">Employee Portal</a>
             <div class="search-container">
-                <form class="search-form" onsubmit="performSearch(event)">
-                    <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                <form class="search-form" method="get" action="search.html">
+                    <input type="text" id="searchInput" name="q" placeholder="Search..." class="search-input">
                     <button type="submit" class="search-btn">🔍</button>
                 </form>
             </div>
@@ -1196,11 +1197,6 @@
         }
 
         // ─── Search ──────────────────────────────────────────────────────────────
-        function performSearch(e) {
-            e.preventDefault();
-            const q = document.getElementById('searchInput').value.trim();
-            if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
-        }
 
 
         // ─── Init ────────────────────────────────────────────────────────────────
