@@ -14,6 +14,7 @@ const STATIC_ASSETS = [
     '/index.html',
     '/style.css',
     '/scripts/dark-mode.js',
+    '/scripts/session-tracker.js',
     '/exhibits.html',
     '/visit.html',
     '/support.html',
