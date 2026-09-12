@@ -140,7 +140,7 @@
             font-family: 'Courier New', monospace;
         }
 
-        /* The field WebHID has no equivalent for. */
+        /* Serial number identifies an individual unit, so give it emphasis. */
         .usb-table td.usb-serial {
             background-color: #fff3cd;
             font-weight: 700;
@@ -198,50 +198,6 @@
         .usb-event-note {
             color: #c0392b;
             margin-left: 0.75rem;
-        }
-
-        .usb-storage-note {
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        .usb-storage-note code {
-            background-color: #f1f3f5;
-            padding: 0.1rem 0.3rem;
-            border-radius: 3px;
-        }
-
-        .compare-table-wrap {
-            overflow-x: auto;
-        }
-
-        .compare-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-        }
-
-        .compare-table th,
-        .compare-table td {
-            border: 1px solid #dee2e6;
-            padding: 0.5rem 0.75rem;
-            text-align: left;
-        }
-
-        .compare-table thead th {
-            background-color: #e6f3ff;
-            color: #0066cc;
-        }
-
-        .compare-table td.yes {
-            color: #1c7430;
-            font-weight: 600;
-        }
-
-        .compare-table td.no {
-            color: #b02a37;
-            font-weight: 600;
         }
 
         .login-required {
@@ -346,139 +302,6 @@
                 and they are only reported for devices that already have permission.
             </p>
             <div id="usbTimeline"></div>
-        </div>
-
-        <div class="usb-section">
-            <h2>What WebUSB Reveals That WebHID Does Not</h2>
-            <p class="info-text">
-                The <a href="tank-management.html">Tank Management</a> page records the same
-                kind of device log over WebHID. Comparing the two records for one physical
-                device shows how much the choice of API changes what a site can learn.
-            </p>
-            <div class="compare-table-wrap">
-                <table class="compare-table">
-                    <thead>
-                        <tr>
-                            <th>Field</th>
-                            <th>WebHID</th>
-                            <th>WebUSB</th>
-                            <th>Why it matters</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Vendor and product ID</td>
-                            <td class="yes">yes</td>
-                            <td class="yes">yes</td>
-                            <td>Identifies the model, not the unit</td>
-                        </tr>
-                        <tr>
-                            <td>Product name</td>
-                            <td class="yes">yes</td>
-                            <td class="yes">yes</td>
-                            <td>Vendor-supplied string, not guaranteed unique</td>
-                        </tr>
-                        <tr>
-                            <td>Manufacturer name</td>
-                            <td class="no">no</td>
-                            <td class="yes">yes</td>
-                            <td>Attribution without relying on a vendor ID lookup table</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Serial number</strong></td>
-                            <td class="no">no</td>
-                            <td class="yes">yes</td>
-                            <td><strong>Identifies the individual physical unit, so it can
-                                correlate the same device across profiles, browsers and
-                                machines</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Device and USB version</td>
-                            <td class="no">no</td>
-                            <td class="yes">yes</td>
-                            <td>Firmware revision can narrow down a specific unit further</td>
-                        </tr>
-                        <tr>
-                            <td>Class, subclass, protocol</td>
-                            <td class="no">no</td>
-                            <td class="yes">yes</td>
-                            <td>Says what kind of device it is with no vendor knowledge</td>
-                        </tr>
-                        <tr>
-                            <td>Interface and endpoint tree</td>
-                            <td class="no">no</td>
-                            <td class="yes">yes</td>
-                            <td>Shows every function the device offers</td>
-                        </tr>
-                        <tr>
-                            <td>HID report descriptors</td>
-                            <td class="yes">yes</td>
-                            <td class="no">no</td>
-                            <td>The one area where WebHID is the richer source</td>
-                        </tr>
-                        <tr>
-                            <td>Enumerate without a prompt</td>
-                            <td class="yes">granted only</td>
-                            <td class="yes">granted only</td>
-                            <td>Both return prior grants with no user gesture</td>
-                        </tr>
-                        <tr>
-                            <td>List all attached devices</td>
-                            <td class="no">no</td>
-                            <td class="no">no</td>
-                            <td>Neither API can enumerate the bus</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="usb-section">
-            <h2>Where This Record Lives</h2>
-            <p class="usb-storage-note">
-                The page writes three separate records, each with different survival
-                characteristics:
-            </p>
-            <ul class="usb-storage-note">
-                <li><code>usbDeviceRegistry</code> in localStorage: one entry per distinct
-                    device, with first seen, last seen, a sighting count, and the full
-                    configuration tree. Survives browser restarts.</li>
-                <li><code>usbDeviceEvents</code> in localStorage: a capped timeline of
-                    sightings, grants, and plug events. Survives browser restarts.</li>
-                <li><code>usbSessionDevices</code> in sessionStorage: sightings for this tab
-                    only, discarded when the tab closes.</li>
-            </ul>
-            <p class="usb-storage-note">
-                Because WebUSB reports a serial number, registry keys here name an
-                individual unit rather than a model. Two identical label printers produce
-                two separate entries, where the WebHID record on the Tank Management page
-                would collapse them into one.
-            </p>
-            <p class="usb-storage-note">
-                A fourth record is kept by the browser itself, not by this page. When a
-                device is granted, the browser stores that permission in its own profile so
-                the grant survives a reload. That is why devices can appear in the record
-                above with no user action on this visit. Clearing the site record with the
-                button above does not revoke the browser's grant, and revoking the
-                permission in browser settings does not erase the site record. The two are
-                independent, and they can disagree.
-            </p>
-            <p class="usb-storage-note">
-                <strong>Limits worth noting:</strong> WebUSB cannot enumerate the bus. The
-                chooser dialog sees every attached device, but the page only ever learns
-                about the ones already granted plus the ones picked. The browser also
-                refuses to let a page claim certain interface classes, including keyboards
-                and mice, mass storage, smart cards, audio and video. Those devices can
-                still be surveyed for identity, but not communicated with. Any interface in
-                a blocked class is flagged in the configuration tree above.
-            </p>
-            <p class="usb-storage-note">
-                <strong>Access note:</strong> the check guarding this page reads a flag out
-                of localStorage in the browser. It keeps the page tidy for visitors, and it
-                is not a security boundary. Anyone who can open developer tools can set that
-                flag. Compare what the gate actually prevents against what it appears to
-                prevent.
-            </p>
         </div>
     </div>
 

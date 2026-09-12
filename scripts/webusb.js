@@ -328,7 +328,7 @@
                                a.interfaceClassName + ' (' + a.interfaceClassHex + ')' +
                                ', subclass ' + hex2(a.interfaceSubclass) +
                                ', protocol ' + hex2(a.interfaceProtocol) +
-                               (a.browserProtected ? '  <- browser will not allow claiming this' : ''));
+                               (a.browserProtected ? '  [protected]' : ''));
                     if (a.interfaceName) lines.push('      name: ' + a.interfaceName);
                     a.endpoints.forEach(function (e) {
                         lines.push('      Endpoint ' + e.endpointNumber + ' ' +
@@ -453,8 +453,7 @@
             userAgent: navigator.userAgent,
             webUsbSupported: 'usb' in navigator,
             note: 'WebUSB cannot enumerate the USB bus. This record holds only ' +
-                  'devices granted to this origin or picked in the chooser. Unlike ' +
-                  'WebHID it does report manufacturer name and serial number.',
+                  'devices granted to this origin or picked in the chooser.',
             devices: readJSON(localStorage, REGISTRY_KEY, {}),
             events: readJSON(localStorage, EVENTS_KEY, []),
             sessionSightings: readJSON(sessionStorage, SESSION_KEY, [])
