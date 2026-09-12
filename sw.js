@@ -31,7 +31,8 @@ const STATIC_ASSETS = [
     '/tank-management.html',
     '/scripts/webhid.js',
     '/usb-devices.html',
-    '/scripts/webusb.js'
+    '/scripts/webusb.js',
+    '/scripts/file-save.js'
 ];
 
 // Install event - cache static assets

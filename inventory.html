@@ -7,6 +7,7 @@
     <link rel="search" type="application/opensearchdescription+xml" title="Aquatic Nature Discovery" href="opensearch.xml">
     <title>Equipment Inventory - Aquatic Nature Discovery</title>
     <link rel="stylesheet" href="style.css">
+    <script src="scripts/file-save.js" defer></script>
     <style>
         .inventory-container {
             max-width: 1400px;
@@ -384,6 +385,80 @@
         .delete-file-btn:hover {
             background-color: #c82333;
         }
+
+        .fs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .fs-table th {
+            text-align: left;
+            width: 13rem;
+            padding: 0.35rem 0.5rem 0.35rem 0;
+            color: #555;
+            font-weight: 600;
+            vertical-align: top;
+        }
+
+        .fs-table td {
+            padding: 0.35rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* The folder name is the one value here that points outside the
+           browser, so give it emphasis. */
+        .fs-table td.fs-folder {
+            background-color: #fff3cd;
+            font-weight: 700;
+            padding-left: 0.4rem;
+        }
+
+        .fs-table td.fs-ok {
+            color: #155724;
+        }
+
+        .fs-table td.fs-attention {
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .fs-log-table {
+            font-size: 0.85rem;
+        }
+
+        .fs-log-table th {
+            width: auto;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .fs-log-table td {
+            border-bottom: 1px solid #f1f3f5;
+            padding-right: 1rem;
+        }
+
+        .fs-log-table td.fs-method {
+            color: #0066cc;
+        }
+
+        .fs-log-wrapper {
+            max-height: 320px;
+            overflow-y: auto;
+            margin-top: 0.5rem;
+        }
+
+        .fs-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .fs-toolbar button:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -502,8 +577,30 @@
             <div class="control-group">
                 <button class="control-button" onclick="uploadImages()">📤 Upload Files</button>
                 <button class="control-button" onclick="browseUploadedImages()" style="background-color: #28a745;">📁 Browse Uploaded Files</button>
+                <button class="control-button" id="uploadToFolderButton" onclick="uploadToEquipmentFolder()" style="background-color: #6f42c1;">📂 Copy to Equipment Folder</button>
             </div>
             <div id="uploadStatus" style="margin-top: 1rem; padding: 1rem; border-radius: 4px; display: none;"></div>
+        </div>
+
+        <div class="inventory-controls">
+            <h3>📦 Export &amp; File Destination</h3>
+            <p>Export the equipment manifest and choose where inventory files are written</p>
+            <div id="fsDestination"></div>
+            <div class="fs-toolbar">
+                <button class="control-button" id="fsChooseFolder" type="button">📂 Choose Equipment Folder</button>
+                <button class="control-button" id="fsRestoreAccess" type="button">🔓 Confirm Folder Access</button>
+                <button class="control-button" id="fsForgetFolder" type="button" style="background-color: #6c757d;">✖ Clear Folder</button>
+            </div>
+            <div class="fs-toolbar">
+                <button class="control-button" onclick="exportManifest('json')">⬇ Export Manifest (JSON)</button>
+                <button class="control-button" onclick="exportManifest('csv')">⬇ Export Manifest (CSV)</button>
+            </div>
+            <h3 style="margin-top: 2rem;">🧾 Saved Files</h3>
+            <p id="fsSaveCount">Nothing saved from this page yet.</p>
+            <div class="fs-log-wrapper"><div id="fsSaveLog"></div></div>
+            <div class="fs-toolbar">
+                <button class="control-button" id="fsClearLog" type="button" style="background-color: #6c757d;">✖ Clear Saved File Record</button>
+            </div>
         </div>
 
         <div class="inventory-grid">
@@ -715,22 +812,58 @@
         }
 
         // Download file function
+        // Hands a blob to the save picker when the browser has one, and to the
+        // download attribute when it does not. Both routes end with the file on
+        // disk, but only the second one goes through the browser's download flow.
+        function deliverFile(blob, fileName) {
+            if (window.fileSave) {
+                return window.fileSave.saveBlob(blob, fileName)
+                    .then(function(result) {
+                        if (result.method === 'cancelled') {
+                            showStatus(`Save of ${fileName} cancelled`, 'info');
+                        } else if (result.method === 'file-system-access') {
+                            showStatus(`Saved ${result.name} to the location you chose`, 'success');
+                        } else {
+                            showStatus(`Downloaded ${fileName}`, 'success');
+                        }
+                        return result;
+                    })
+                    .catch(function(error) {
+                        console.error(`Failed to save ${fileName}:`, error);
+                        showStatus(`Failed to save ${fileName}: ${error.message}`, 'error');
+                    });
+            }
+
+            // file-save.js absent, so fall back to the plain anchor route.
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showStatus(`Downloaded ${fileName}`, 'success');
+            return Promise.resolve({ method: 'anchor-download', name: fileName });
+        }
+
         function downloadFile(fileName, extension, isLocalStorage) {
             console.log(`Downloading file: ${fileName} (${extension})`);
-            
+
             if (isLocalStorage) {
                 // For localStorage files, get the data and create a download link
                 const savedFiles = JSON.parse(localStorage.getItem('equipmentImages') || '[]');
                 const fileData = savedFiles.find(file => file.name === fileName);
-                
+
                 if (fileData) {
-                    const link = document.createElement('a');
-                    link.href = fileData.data;
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    showStatus(`Downloaded ${fileName}`, 'success');
+                    // Stored as a data URL, so turn it back into bytes before saving.
+                    fetch(fileData.data)
+                        .then(response => response.blob())
+                        .then(blob => deliverFile(blob, fileName))
+                        .catch(error => {
+                            console.error(`Error reading ${fileName} from localStorage:`, error);
+                            showStatus(`Failed to read file ${fileName}`, 'error');
+                        });
                 } else {
                     showStatus(`File ${fileName} not found in localStorage`, 'error');
                 }
@@ -740,17 +873,7 @@
                     fileSystemRoot.getDirectory(extension, { create: false }, function(dir) {
                         dir.getFile(fileName, { create: false }, function(fileEntry) {
                             fileEntry.file(function(file) {
-                                const reader = new FileReader();
-                                reader.onload = function(e) {
-                                    const link = document.createElement('a');
-                                    link.href = e.target.result;
-                                    link.download = fileName;
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                    showStatus(`Downloaded ${fileName}`, 'success');
-                                };
-                                reader.readAsDataURL(file);
+                                deliverFile(file, fileName);
                             }, function(error) {
                                 console.error(`Error reading file ${fileName}:`, error);
                                 showStatus(`Failed to read file ${fileName}`, 'error');
@@ -822,6 +945,12 @@
             if (isLoggedIn === 'true') {
                 document.getElementById('inventoryContent').style.display = 'block';
                 document.getElementById('loginRequired').style.display = 'none';
+
+                // Reading the stored folder handle is held back until the check
+                // passes, so a locked page reports nothing about file destinations.
+                if (window.fileSave) {
+                    window.fileSave.start();
+                }
             } else {
                 document.getElementById('inventoryContent').style.display = 'none';
                 document.getElementById('loginRequired').style.display = 'block';
@@ -878,6 +1007,143 @@
             document.getElementById('searchCategory').value = '';
             document.getElementById('searchStatus').value = '';
             searchEquipment();
+        }
+
+        // Read the equipment cards into plain objects for export. The detail
+        // rows are label/value pairs, so the label becomes the field name.
+        function buildManifest() {
+            const cards = document.querySelectorAll('.inventory-card');
+
+            return Array.from(cards).map(card => {
+                const heading = card.querySelector('h3');
+                const item = {
+                    name: heading ? heading.textContent.trim() : '',
+                    category: card.dataset.category || '',
+                    status: card.dataset.status || ''
+                };
+
+                card.querySelectorAll('.inventory-details p').forEach(detail => {
+                    const label = detail.querySelector('strong');
+                    if (!label) return;
+                    const key = label.textContent.replace(/:\s*$/, '').trim();
+                    const value = detail.textContent.slice(label.textContent.length).trim();
+                    if (key) item[key] = value;
+                });
+
+                return item;
+            });
+        }
+
+        // Quote only the fields that need it, and use CRLF so the result opens
+        // cleanly in the spreadsheet tools maintenance staff use.
+        function manifestToCSV(items) {
+            const columns = [];
+            items.forEach(item => {
+                Object.keys(item).forEach(key => {
+                    if (columns.indexOf(key) === -1) columns.push(key);
+                });
+            });
+
+            const escape = value => {
+                const text = (value === undefined || value === null) ? '' : String(value);
+                return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+            };
+
+            const lines = [columns.map(escape).join(',')];
+            items.forEach(item => {
+                lines.push(columns.map(column => escape(item[column])).join(','));
+            });
+            return lines.join('\r\n');
+        }
+
+        function exportManifest(format) {
+            const items = buildManifest();
+            if (items.length === 0) {
+                showStatus('No equipment on the page to export.', 'warning');
+                return;
+            }
+
+            const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+
+            if (format === 'csv') {
+                const blob = new Blob([manifestToCSV(items)], { type: 'text/csv' });
+                deliverFile(blob, `equipment-manifest-${stamp}.csv`);
+            } else {
+                const payload = {
+                    generated: new Date().toISOString(),
+                    source: location.origin + location.pathname,
+                    count: items.length,
+                    equipment: items
+                };
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                deliverFile(blob, `equipment-manifest-${stamp}.json`);
+            }
+        }
+
+        // Writes the selected files into a folder on the machine rather than
+        // into the browser's own storage. Files are sorted into subfolders by
+        // extension, the same way the upload path sorts them internally.
+        async function uploadToEquipmentFolder() {
+            const fileInput = document.getElementById('imageUpload');
+            const category = document.getElementById('equipmentCategory').value;
+            const equipmentName = document.getElementById('equipmentName').value.trim();
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                fileInput.click();
+                return;
+            }
+
+            if (!window.fileSave || !window.fileSave.support.directoryPicker) {
+                showStatus('This browser cannot write to a folder you choose. Use Upload Files to store them in the browser instead.', 'warning');
+                return;
+            }
+
+            try {
+                const existing = await window.fileSave.storedDirectory();
+                if (!existing) {
+                    const picked = await window.fileSave.pickExportDirectory();
+                    if (!picked.ok) {
+                        showStatus(picked.reason === 'cancelled'
+                            ? 'No folder chosen, so nothing was written.'
+                            : 'Could not set an equipment folder.', 'warning');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Could not open the folder picker:', error);
+                showStatus('Could not open the folder picker. Use Choose Equipment Folder, then try again.', 'error');
+                return;
+            }
+
+            const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const entries = Array.from(fileInput.files).map(file => {
+                const extension = file.name.split('.').pop().toLowerCase();
+                const base = equipmentName
+                    ? `${equipmentName}_${category}`
+                    : file.name.replace(/\.[^/.]+$/, '');
+                return { blob: file, name: `${base}_${stamp}.${extension}`, folder: extension };
+            });
+
+            showStatus(`Writing ${entries.length} file(s) to the equipment folder...`, 'info');
+
+            try {
+                const result = await window.fileSave.writeFiles(entries);
+
+                if (result.ok) {
+                    showStatus(`Wrote ${result.written.length} file(s) to "${result.directory}".`, 'success');
+                    document.getElementById('imageUpload').value = '';
+                    document.getElementById('equipmentName').value = '';
+                } else if (result.reason === 'no-directory') {
+                    showStatus('No equipment folder is set. Use Choose Equipment Folder first.', 'warning');
+                } else if (result.reason && result.reason.indexOf('permission-') === 0) {
+                    showStatus(`Write access to "${result.directory}" was not granted. Use Confirm Folder Access.`, 'warning');
+                } else {
+                    showStatus(`Wrote ${result.written.length} file(s), ${result.failed.length} failed. See the console for details.`, 'warning');
+                }
+            } catch (error) {
+                console.error('Folder write failed:', error);
+                showStatus(`Folder write failed: ${error.message}`, 'error');
+            }
         }
 
         // Initialize page
